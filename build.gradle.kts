@@ -1,12 +1,18 @@
 plugins {
     java
+
     id("org.springframework.boot") version "4.1.0"
     id("io.spring.dependency-management") version "1.1.7"
+
+    jacoco
+    checkstyle
+
+    id("com.diffplug.spotless") version "7.2.1"
 }
 
 group = "com.aegis"
-version = "0.0.1-SNAPSHOT"
-description = "Aegis-Sentinel-Backend"
+version = "0.1.0-SNAPSHOT"
+description = "Enterprise Cloud Security Platform"
 
 java {
     toolchain {
@@ -50,6 +56,8 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testAnnotationProcessor("org.projectlombok:lombok")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+    implementation("org.apache.commons:commons-lang3:3.18.0")
 }
 
 tasks.withType<Test> {
