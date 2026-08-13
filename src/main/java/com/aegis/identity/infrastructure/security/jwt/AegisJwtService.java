@@ -77,6 +77,8 @@ public class AegisJwtService implements TokenService {
             }
             return UUID.fromString(jwt.getSubject());
         } catch (JwtException | IllegalArgumentException ex) {
+            System.err.println("JWT decoding failed: " + ex.getMessage());
+            ex.printStackTrace();
             throw new IllegalArgumentException("Invalid or expired refresh token", ex);
         }
     }
