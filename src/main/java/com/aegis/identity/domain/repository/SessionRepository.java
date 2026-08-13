@@ -15,4 +15,6 @@ public interface SessionRepository {
     void deleteById(UUID id);
 
     void deleteByUserId(UUID userId);
+
+    void revokeAllByUserId(UUID userId);
 }

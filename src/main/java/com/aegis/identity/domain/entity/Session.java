@@ -67,4 +67,16 @@ public class Session {
     public static Session create(User user, String refreshTokenHash) {
         return create(user, refreshTokenHash, Instant.now().plus(java.time.Duration.ofDays(7)));
     }
+
+    public boolean isExpired() {
+        return expiresAt != null && expiresAt.isBefore(Instant.now());
+    }
+
+    public boolean isActive() {
+        return !Boolean.TRUE.equals(revoked) && !isExpired();
+    }
+
+    public void revoke() {
+        this.revoked = true;
+    }
 }

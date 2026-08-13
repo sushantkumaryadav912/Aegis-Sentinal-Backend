@@ -40,4 +40,9 @@ public class SessionRepositoryAdapter implements SessionRepository {
     public void deleteByUserId(UUID userId) {
         repository.deleteByUserId(userId);
     }
+
+    @Override
+    public void revokeAllByUserId(UUID userId) {
+        repository.revokeAllByUserId(userId);
+    }
 }
