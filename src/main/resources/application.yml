@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: aegis-sentinel-backend
+
+  profiles:
+    active: dev
+
+server:
+  port: 8080
+
+  servlet:
+    context-path: /
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - metrics
+
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+info:
+  app:
+    name: Aegis Sentinel Backend
+    version: 0.1.0-SNAPSHOT
+    description: Enterprise Cloud Incident Detection and Response Platform
