@@ -2,6 +2,7 @@ package com.aegis.identity.infrastructure.security.config;
 
 import com.aegis.identity.infrastructure.security.authorization.DatabaseGrantedAuthoritiesConverter;
 import com.aegis.identity.infrastructure.security.jwt.JwtProperties;
+import com.aegis.identity.infrastructure.security.tenant.TenantResolverFilter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -21,9 +23,14 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfiguration {
 
     private final DatabaseGrantedAuthoritiesConverter authoritiesConverter;
+    private final TenantResolverFilter tenantResolverFilter;
 
-    public SecurityConfiguration(DatabaseGrantedAuthoritiesConverter authoritiesConverter) {
+    public SecurityConfiguration(
+            DatabaseGrantedAuthoritiesConverter authoritiesConverter,
+            TenantResolverFilter tenantResolverFilter) {
+
         this.authoritiesConverter = authoritiesConverter;
+        this.tenantResolverFilter = tenantResolverFilter;
     }
 
     @Bean
@@ -70,7 +77,8 @@ public class SecurityConfiguration {
                         .jwt(jwt -> jwt
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
                         )
-                );
+                )
+                .addFilterAfter(tenantResolverFilter, BearerTokenAuthenticationFilter.class);
 
         return http.build();
     }
