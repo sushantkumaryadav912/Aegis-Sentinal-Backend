@@ -17,8 +17,8 @@ public class SessionRepositoryAdapter implements SessionRepository {
     }
 
     @Override
-    public Optional<Session> findById(UUID id) {
-        return repository.findById(id);
+    public Session save(Session session) {
+        return repository.save(session);
     }
 
     @Override
@@ -27,8 +27,13 @@ public class SessionRepositoryAdapter implements SessionRepository {
     }
 
     @Override
-    public Session save(Session session) {
-        return repository.save(session);
+    public Optional<Session> findById(UUID id) {
+        return repository.findById(id);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        repository.deleteById(id);
     }
 
     @Override

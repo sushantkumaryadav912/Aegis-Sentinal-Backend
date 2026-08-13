@@ -54,4 +54,17 @@ public class Session {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    public static Session create(User user, String refreshTokenHash, Instant expiresAt) {
+        return Session.builder()
+                .user(user)
+                .refreshTokenHash(refreshTokenHash)
+                .expiresAt(expiresAt)
+                .revoked(false)
+                .build();
+    }
+
+    public static Session create(User user, String refreshTokenHash) {
+        return create(user, refreshTokenHash, Instant.now().plus(java.time.Duration.ofDays(7)));
+    }
 }

@@ -15,17 +15,20 @@ public class AuthenticateUserService {
     private final UserRepository userRepository;
     private final PasswordHasher passwordHasher;
     private final TokenService tokenService;
+    private final CreateSessionService createSessionService;
 
     public AuthenticateUserService(
             UserRepository userRepository,
             PasswordHasher passwordHasher,
-            TokenService tokenService) {
+            TokenService tokenService,
+            CreateSessionService createSessionService) {
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
         this.tokenService = tokenService;
+        this.createSessionService = createSessionService;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthenticationResult execute(LoginUserCommand command) {
 
         User user = userRepository.findByEmail(command.email())
@@ -44,6 +47,8 @@ public class AuthenticateUserService {
 
         String accessToken = tokenService.generateAccessToken(user);
         String refreshToken = tokenService.generateRefreshToken(user);
+
+        createSessionService.create(user, refreshToken);
 
         return new AuthenticationResult(
                 accessToken,

@@ -6,11 +6,13 @@ import java.util.UUID;
 
 public interface SessionRepository {
 
-    Optional<Session> findById(UUID id);
+    Session save(Session session);
 
     Optional<Session> findByRefreshTokenHash(String refreshTokenHash);
 
-    Session save(Session session);
+    Optional<Session> findById(UUID id);
+
+    void deleteById(UUID id);
 
     void deleteByUserId(UUID userId);
 }
