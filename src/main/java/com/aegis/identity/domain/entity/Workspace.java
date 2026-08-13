@@ -49,4 +49,12 @@ public class Workspace {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    public static Workspace create(Organization organization, String name, String slug) {
+        return Workspace.builder()
+                .organization(organization)
+                .name(name)
+                .slug(slug)
+                .build();
+    }
 }

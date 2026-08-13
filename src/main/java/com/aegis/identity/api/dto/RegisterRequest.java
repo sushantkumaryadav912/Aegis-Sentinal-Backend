@@ -3,11 +3,24 @@ package com.aegis.identity.api.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import java.util.UUID;
 
 public record RegisterRequest(
 
-        UUID organizationId,
+        @NotBlank
+        @Size(max = 255)
+        String organizationName,
+
+        @NotBlank
+        @Size(max = 100)
+        String organizationSlug,
+
+        @NotBlank
+        @Size(max = 255)
+        String workspaceName,
+
+        @NotBlank
+        @Size(max = 100)
+        String workspaceSlug,
 
         @NotBlank
         @Email

@@ -50,4 +50,13 @@ public class UserRole {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    public static UserRole create(User user, Role role, Organization organization, Workspace workspace) {
+        return UserRole.builder()
+                .user(user)
+                .role(role)
+                .organization(organization)
+                .workspace(workspace)
+                .build();
+    }
 }

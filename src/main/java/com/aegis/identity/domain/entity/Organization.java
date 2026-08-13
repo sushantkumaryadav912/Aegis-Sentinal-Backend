@@ -42,4 +42,11 @@ public class Organization {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    public static Organization create(String name, String slug) {
+        return Organization.builder()
+                .name(name)
+                .slug(slug)
+                .build();
+    }
 }
