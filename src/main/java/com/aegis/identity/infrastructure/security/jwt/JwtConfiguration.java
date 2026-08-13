@@ -40,15 +40,8 @@ public class JwtConfiguration {
             SecretKey jwtSecretKey,
             JwtProperties properties) {
 
-        NimbusJwtDecoder decoder =
-                NimbusJwtDecoder.withSecretKey(jwtSecretKey)
-                        .macAlgorithm(MacAlgorithm.HS256)
-                        .build();
-
-        decoder.setClaimSetConverter(
-                claims -> claims
-        );
-
-        return decoder;
+        return NimbusJwtDecoder.withSecretKey(jwtSecretKey)
+                .macAlgorithm(MacAlgorithm.HS256)
+                .build();
     }
 }

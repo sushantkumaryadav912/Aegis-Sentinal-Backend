@@ -40,9 +40,12 @@ public class SecurityConfiguration {
                                 "/actuator/health/**",
                                 "/oauth2/**",
                                 "/login/**",
-                                "/error"
+                                "/error",
+                                "/api/aegis/v1/auth/login",
+                                "/api/aegis/v1/auth/register",
+                                "/api/aegis/v1/auth/refresh",
+                                "/api/aegis/v1/auth/logout"
                         ).permitAll()
-                        .requestMatchers("/api/aegis/v1/auth/**", "/api/v1/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

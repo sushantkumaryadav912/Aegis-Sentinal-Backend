@@ -31,7 +31,7 @@ public class RefreshTokenService {
         this.createSessionService = createSessionService;
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = IllegalArgumentException.class)
     public AuthenticationResult execute(RefreshTokenCommand command) {
 
         UUID userId = tokenService.extractUserIdFromRefreshToken(command.refreshToken());
