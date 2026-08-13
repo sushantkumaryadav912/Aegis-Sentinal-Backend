@@ -66,3 +66,22 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+jacoco {
+    toolVersion = "0.8.13"
+}
+
+checkstyle {
+    toolVersion = "10.26.1"
+}
+
+spotless {
+    java {
+        target("src/**/*.java")
+        googleJavaFormat()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
