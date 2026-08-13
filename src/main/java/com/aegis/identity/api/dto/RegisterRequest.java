@@ -3,33 +3,26 @@ package com.aegis.identity.api.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.util.UUID;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class RegisterRequest {
+public record RegisterRequest(
 
-    @NotBlank(message = "Organization name is required")
-    private String organizationName;
+        UUID organizationId,
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
-    private String email;
+        @NotBlank
+        @Email
+        String email,
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 8, message = "Password must be at least 8 characters long")
-    private String password;
+        @NotBlank
+        @Size(min = 8, max = 128)
+        String password,
 
-    @NotBlank(message = "First name is required")
-    private String firstName;
+        @NotBlank
+        @Size(max = 100)
+        String firstName,
 
-    @NotBlank(message = "Last name is required")
-    private String lastName;
+        @NotBlank
+        @Size(max = 100)
+        String lastName
+) {
 }

@@ -39,7 +39,8 @@ public class SecurityConfiguration {
                         .requestMatchers(
                                 "/actuator/health/**",
                                 "/oauth2/**",
-                                "/login/**"
+                                "/login/**",
+                                "/error"
                         ).permitAll()
                         .requestMatchers("/api/aegis/v1/auth/**", "/api/v1/auth/**").permitAll()
                         .anyRequest().authenticated()
