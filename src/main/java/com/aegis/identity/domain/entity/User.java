@@ -39,7 +39,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash")
     private String passwordHash;
 
     @Column(name = "first_name", nullable = false, length = 100)
@@ -63,6 +63,10 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    public boolean isActive() {
+        return Boolean.TRUE.equals(isActive);
+    }
 
     public static User create(Organization organization, String email, String passwordHash, String firstName, String lastName) {
         return User.builder()
