@@ -37,260 +37,258 @@ import org.springframework.web.context.WebApplicationContext;
 @SpringBootTest
 class OAuthAuthenticationIntegrationTest {
 
-    @Autowired
-    private WebApplicationContext context;
+  @Autowired private WebApplicationContext context;
 
-    @Autowired
-    private AuthenticateOAuthUserService authenticateOAuthUserService;
+  @Autowired private AuthenticateOAuthUserService authenticateOAuthUserService;
 
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired private UserRepository userRepository;
 
-    @Autowired
-    private UserIdentityRepository userIdentityRepository;
+  @Autowired private UserIdentityRepository userIdentityRepository;
 
-    @Autowired
-    private UserRoleRepository userRoleRepository;
+  @Autowired private UserRoleRepository userRoleRepository;
 
-    @Autowired
-    private OAuthAccountLinkService oAuthAccountLinkService;
+  @Autowired private OAuthAccountLinkService oAuthAccountLinkService;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private MockMvc mockMvc;
+  private final ObjectMapper objectMapper = new ObjectMapper();
+  private MockMvc mockMvc;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .apply(springSecurity())
-                .build();
-    }
+  @BeforeEach
+  void setUp() {
+    mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+  }
 
-    @Test
-    @DisplayName("Should trigger automated tenant onboarding for new Google OAuth user")
-    void testNewGoogleUser_triggersTenantOnboarding() {
-        String uniqueSub = "google-sub-" + UUID.randomUUID();
-        String uniqueEmail = "new-oauth-user-" + UUID.randomUUID() + "@google.test";
+  @Test
+  @DisplayName("Should trigger automated tenant onboarding for new Google OAuth user")
+  void testNewGoogleUser_triggersTenantOnboarding() {
+    String uniqueSub = "google-sub-" + UUID.randomUUID();
+    String uniqueEmail = "new-oauth-user-" + UUID.randomUUID() + "@google.test";
 
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("sub", uniqueSub);
-        attributes.put("email", uniqueEmail);
-        attributes.put("given_name", "OAuth");
-        attributes.put("family_name", "Tester");
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put("sub", uniqueSub);
+    attributes.put("email", uniqueEmail);
+    attributes.put("given_name", "OAuth");
+    attributes.put("family_name", "Tester");
 
-        OAuth2User principal = new DefaultOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
-                attributes,
-                "sub"
-        );
+    OAuth2User principal =
+        new DefaultOAuth2User(
+            Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")), attributes, "sub");
 
-        OAuthAuthenticationResult result = authenticateOAuthUserService.execute(principal);
+    OAuthAuthenticationResult result = authenticateOAuthUserService.execute(principal);
 
-        assertThat(result.status()).isEqualTo(OAuthAuthenticationResult.Status.SUCCESS);
-        assertThat(result.authResult()).isNotNull();
-        assertThat(result.authResult().accessToken()).isNotBlank();
-        assertThat(result.authResult().refreshToken()).isNotBlank();
+    assertThat(result.status()).isEqualTo(OAuthAuthenticationResult.Status.SUCCESS);
+    assertThat(result.authResult()).isNotNull();
+    assertThat(result.authResult().accessToken()).isNotBlank();
+    assertThat(result.authResult().refreshToken()).isNotBlank();
 
-        Optional<User> createdUser = userRepository.findByEmail(uniqueEmail);
-        assertThat(createdUser).isPresent();
-        assertThat(createdUser.get().getFirstName()).isEqualTo("OAuth");
-        assertThat(createdUser.get().getLastName()).isEqualTo("Tester");
+    Optional<User> createdUser = userRepository.findByEmail(uniqueEmail);
+    assertThat(createdUser).isPresent();
+    assertThat(createdUser.get().getFirstName()).isEqualTo("OAuth");
+    assertThat(createdUser.get().getLastName()).isEqualTo("Tester");
 
-        Optional<UserIdentity> createdIdentity = userIdentityRepository.findByProviderAndProviderSubject(
-                IdentityProvider.GOOGLE,
-                uniqueSub
-        );
-        assertThat(createdIdentity).isPresent();
-        assertThat(createdIdentity.get().getProvider()).isEqualTo(IdentityProvider.GOOGLE);
+    Optional<UserIdentity> createdIdentity =
+        userIdentityRepository.findByProviderAndProviderSubject(IdentityProvider.GOOGLE, uniqueSub);
+    assertThat(createdIdentity).isPresent();
+    assertThat(createdIdentity.get().getProvider()).isEqualTo(IdentityProvider.GOOGLE);
 
-        var roles = userRoleRepository.findByUserId(createdUser.get().getId());
-        assertThat(roles).isNotEmpty();
-        assertThat(roles.get(0).getRole().getName()).isEqualTo("ORG_ADMIN");
-    }
+    var roles = userRoleRepository.findByUserId(createdUser.get().getId());
+    assertThat(roles).isNotEmpty();
+    assertThat(roles.get(0).getRole().getName()).isEqualTo("ORG_ADMIN");
+  }
 
-    @Test
-    @DisplayName("Should enforce account linking requirement when Google email matches local user without linked identity")
-    void testGoogleLoginWithMatchingLocalEmail_requiresAccountLinking() {
-        String googleSub = "unlinked-sub-" + UUID.randomUUID();
-        String existingEmail = "admin@aegis-demo.local";
+  @Test
+  @DisplayName(
+      "Should enforce account linking requirement when Google email matches local user without linked identity")
+  void testGoogleLoginWithMatchingLocalEmail_requiresAccountLinking() {
+    String googleSub = "unlinked-sub-" + UUID.randomUUID();
+    String existingEmail = "admin@aegis-demo.local";
 
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("sub", googleSub);
-        attributes.put("email", existingEmail);
-        attributes.put("given_name", "Admin");
-        attributes.put("family_name", "User");
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put("sub", googleSub);
+    attributes.put("email", existingEmail);
+    attributes.put("given_name", "Admin");
+    attributes.put("family_name", "User");
 
-        OAuth2User principal = new DefaultOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
-                attributes,
-                "sub"
-        );
+    OAuth2User principal =
+        new DefaultOAuth2User(
+            Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")), attributes, "sub");
 
-        OAuthAuthenticationResult result = authenticateOAuthUserService.execute(principal);
+    OAuthAuthenticationResult result = authenticateOAuthUserService.execute(principal);
 
-        assertThat(result.status()).isEqualTo(OAuthAuthenticationResult.Status.LINKING_REQUIRED);
-        assertThat(result.userInfo().email()).isEqualTo(existingEmail);
-    }
+    assertThat(result.status()).isEqualTo(OAuthAuthenticationResult.Status.LINKING_REQUIRED);
+    assertThat(result.userInfo().email()).isEqualTo(existingEmail);
+  }
 
-    @Test
-    @DisplayName("Should link Google identity to local user after password confirmation via REST API")
-    void testAccountLinking_withValidPassword_linksIdentityAndIssuesTokens() throws Exception {
-        String providerSubject = "link-sub-" + UUID.randomUUID();
-        LinkAccountRequest request = new LinkAccountRequest(
-                "admin@aegis-demo.local",
-                "StrongPassword123!",
-                providerSubject
-        );
+  @Test
+  @DisplayName("Should link Google identity to local user after password confirmation via REST API")
+  void testAccountLinking_withValidPassword_linksIdentityAndIssuesTokens() throws Exception {
+    String providerSubject = "link-sub-" + UUID.randomUUID();
+    LinkAccountRequest request =
+        new LinkAccountRequest("admin@aegis-demo.local", "StrongPassword123!", providerSubject);
 
-        mockMvc.perform(post("/api/aegis/v1/auth/link-account")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            post("/api/aegis/v1/auth/link-account")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk());
 
-        Optional<UserIdentity> linkedIdentity = userIdentityRepository.findByProviderAndProviderSubject(
-                IdentityProvider.GOOGLE,
-                providerSubject
-        );
-        assertThat(linkedIdentity).isPresent();
-    }
+    Optional<UserIdentity> linkedIdentity =
+        userIdentityRepository.findByProviderAndProviderSubject(
+            IdentityProvider.GOOGLE, providerSubject);
+    assertThat(linkedIdentity).isPresent();
+  }
 
-    @Test
-    @DisplayName("Should successfully authenticate existing Google OAuth identity and issue session + JWT pair")
-    void testExistingOAuthUser_logsInSuccessfully() {
-        String googleSub = "existing-sub-" + UUID.randomUUID();
-        String googleEmail = "existing-oauth-" + UUID.randomUUID() + "@google.test";
+  @Test
+  @DisplayName(
+      "Should successfully authenticate existing Google OAuth identity and issue session + JWT pair")
+  void testExistingOAuthUser_logsInSuccessfully() {
+    String googleSub = "existing-sub-" + UUID.randomUUID();
+    String googleEmail = "existing-oauth-" + UUID.randomUUID() + "@google.test";
 
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("sub", googleSub);
-        attributes.put("email", googleEmail);
-        attributes.put("given_name", "Existing");
-        attributes.put("family_name", "OAuthUser");
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put("sub", googleSub);
+    attributes.put("email", googleEmail);
+    attributes.put("given_name", "Existing");
+    attributes.put("family_name", "OAuthUser");
 
-        OAuth2User principal = new DefaultOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
-                attributes,
-                "sub"
-        );
+    OAuth2User principal =
+        new DefaultOAuth2User(
+            Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")), attributes, "sub");
 
-        OAuthAuthenticationResult firstResult = authenticateOAuthUserService.execute(principal);
-        assertThat(firstResult.status()).isEqualTo(OAuthAuthenticationResult.Status.SUCCESS);
+    OAuthAuthenticationResult firstResult = authenticateOAuthUserService.execute(principal);
+    assertThat(firstResult.status()).isEqualTo(OAuthAuthenticationResult.Status.SUCCESS);
 
-        OAuthAuthenticationResult secondResult = authenticateOAuthUserService.execute(principal);
+    OAuthAuthenticationResult secondResult = authenticateOAuthUserService.execute(principal);
 
-        assertThat(secondResult.status()).isEqualTo(OAuthAuthenticationResult.Status.SUCCESS);
-        assertThat(secondResult.authResult()).isNotNull();
-        assertThat(secondResult.authResult().accessToken()).isNotBlank();
-        assertThat(secondResult.authResult().refreshToken()).isNotBlank();
+    assertThat(secondResult.status()).isEqualTo(OAuthAuthenticationResult.Status.SUCCESS);
+    assertThat(secondResult.authResult()).isNotNull();
+    assertThat(secondResult.authResult().accessToken()).isNotBlank();
+    assertThat(secondResult.authResult().refreshToken()).isNotBlank();
 
-        Optional<UserIdentity> identity = userIdentityRepository.findByProviderAndProviderSubject(
-                IdentityProvider.GOOGLE,
-                googleSub
-        );
-        assertThat(identity).isPresent();
-        assertThat(identity.get().getProviderEmail()).isEqualTo(googleEmail);
-    }
+    Optional<UserIdentity> identity =
+        userIdentityRepository.findByProviderAndProviderSubject(IdentityProvider.GOOGLE, googleSub);
+    assertThat(identity).isPresent();
+    assertThat(identity.get().getProviderEmail()).isEqualTo(googleEmail);
+  }
 
-    @Test
-    @DisplayName("Should reject authentication for inactive user with existing OAuth identity")
-    void testExistingOAuthUser_inactiveAccount_throwsException() {
-        String googleSub = "inactive-sub-" + UUID.randomUUID();
-        String googleEmail = "inactive-oauth-" + UUID.randomUUID() + "@google.test";
+  @Test
+  @DisplayName("Should reject authentication for inactive user with existing OAuth identity")
+  void testExistingOAuthUser_inactiveAccount_throwsException() {
+    String googleSub = "inactive-sub-" + UUID.randomUUID();
+    String googleEmail = "inactive-oauth-" + UUID.randomUUID() + "@google.test";
 
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("sub", googleSub);
-        attributes.put("email", googleEmail);
-        attributes.put("given_name", "Inactive");
-        attributes.put("family_name", "OAuthUser");
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put("sub", googleSub);
+    attributes.put("email", googleEmail);
+    attributes.put("given_name", "Inactive");
+    attributes.put("family_name", "OAuthUser");
 
-        OAuth2User principal = new DefaultOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
-                attributes,
-                "sub"
-        );
+    OAuth2User principal =
+        new DefaultOAuth2User(
+            Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")), attributes, "sub");
 
-        OAuthAuthenticationResult setupResult = authenticateOAuthUserService.execute(principal);
-        assertThat(setupResult.status()).isEqualTo(OAuthAuthenticationResult.Status.SUCCESS);
+    OAuthAuthenticationResult setupResult = authenticateOAuthUserService.execute(principal);
+    assertThat(setupResult.status()).isEqualTo(OAuthAuthenticationResult.Status.SUCCESS);
 
-        User user = userRepository.findByEmail(googleEmail).orElseThrow();
-        user.setIsActive(false);
-        userRepository.save(user);
+    User user = userRepository.findByEmail(googleEmail).orElseThrow();
+    user.setIsActive(false);
+    userRepository.save(user);
 
-        org.assertj.core.api.Assertions.assertThatThrownBy(() -> authenticateOAuthUserService.execute(principal))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("inactive");
-    }
+    org.assertj.core.api.Assertions.assertThatThrownBy(
+            () -> authenticateOAuthUserService.execute(principal))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("inactive");
+  }
 
-    @Test
-    @DisplayName("Should successfully link Google identity with different email and preserve tenant membership without alteration")
-    void testLinkAuthenticatedUser_success_doesNotAlterTenantContext() {
-        User user = userRepository.findByEmail("admin@aegis-demo.local").orElseThrow();
-        UUID originalOrgId = user.getOrganization().getId();
+  @Test
+  @DisplayName(
+      "Should successfully link Google identity with different email and preserve tenant membership without alteration")
+  void testLinkAuthenticatedUser_success_doesNotAlterTenantContext() {
+    User user = userRepository.findByEmail("admin@aegis-demo.local").orElseThrow();
+    UUID originalOrgId = user.getOrganization().getId();
 
-        String providerSubject = "google-personal-sub-" + UUID.randomUUID();
-        String personalEmail = "personal-oauth-" + UUID.randomUUID() + "@gmail.com";
+    String providerSubject = "google-personal-sub-" + UUID.randomUUID();
+    String personalEmail = "personal-oauth-" + UUID.randomUUID() + "@gmail.com";
 
-        UserIdentity linkedIdentity = oAuthAccountLinkService.linkAuthenticatedUser(
-                user.getId(),
-                IdentityProvider.GOOGLE,
-                providerSubject,
-                personalEmail
-        );
+    UserIdentity linkedIdentity =
+        oAuthAccountLinkService.linkAuthenticatedUser(
+            user.getId(), IdentityProvider.GOOGLE, providerSubject, personalEmail);
 
-        assertThat(linkedIdentity).isNotNull();
-        assertThat(linkedIdentity.getUser().getId()).isEqualTo(user.getId());
-        assertThat(linkedIdentity.getProviderEmail()).isEqualTo(personalEmail);
+    assertThat(linkedIdentity).isNotNull();
+    assertThat(linkedIdentity.getUser().getId()).isEqualTo(user.getId());
+    assertThat(linkedIdentity.getProviderEmail()).isEqualTo(personalEmail);
 
-        User updatedUser = userRepository.findById(user.getId()).orElseThrow();
-        assertThat(updatedUser.getOrganization().getId()).isEqualTo(originalOrgId);
+    User updatedUser = userRepository.findById(user.getId()).orElseThrow();
+    assertThat(updatedUser.getOrganization().getId()).isEqualTo(originalOrgId);
 
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("sub", providerSubject);
-        attributes.put("email", personalEmail);
-        attributes.put("given_name", "Admin");
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put("sub", providerSubject);
+    attributes.put("email", personalEmail);
+    attributes.put("given_name", "Admin");
 
-        OAuth2User principal = new DefaultOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
-                attributes,
-                "sub"
-        );
+    OAuth2User principal =
+        new DefaultOAuth2User(
+            Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")), attributes, "sub");
 
-        OAuthAuthenticationResult authResult = authenticateOAuthUserService.execute(principal);
-        assertThat(authResult.status()).isEqualTo(OAuthAuthenticationResult.Status.SUCCESS);
-    }
+    OAuthAuthenticationResult authResult = authenticateOAuthUserService.execute(principal);
+    assertThat(authResult.status()).isEqualTo(OAuthAuthenticationResult.Status.SUCCESS);
+  }
 
-    @Test
-    @DisplayName("Should reject linking when Google identity already belongs to another user")
-    void testLinkAccount_conflictWhenIdentityAlreadyBelongsToAnotherUser() {
-        String sharedSub = "shared-sub-" + UUID.randomUUID();
-        String user1Email = "user1-" + UUID.randomUUID() + "@aegis.test";
-        String user2Email = "user2-" + UUID.randomUUID() + "@aegis.test";
+  @Test
+  @DisplayName("Should reject linking when Google identity already belongs to another user")
+  void testLinkAccount_conflictWhenIdentityAlreadyBelongsToAnotherUser() {
+    String sharedSub = "shared-sub-" + UUID.randomUUID();
+    String user1Email = "user1-" + UUID.randomUUID() + "@aegis.test";
+    String user2Email = "user2-" + UUID.randomUUID() + "@aegis.test";
 
-        User user1 = userRepository.save(User.create(
-                userRepository.findByEmail("admin@aegis-demo.local").orElseThrow().getOrganization(),
-                user1Email, "hash", "User", "One"));
-        User user2 = userRepository.save(User.create(
-                userRepository.findByEmail("admin@aegis-demo.local").orElseThrow().getOrganization(),
-                user2Email, "hash", "User", "Two"));
+    User user1 =
+        userRepository.save(
+            User.create(
+                userRepository
+                    .findByEmail("admin@aegis-demo.local")
+                    .orElseThrow()
+                    .getOrganization(),
+                user1Email,
+                "hash",
+                "User",
+                "One"));
+    User user2 =
+        userRepository.save(
+            User.create(
+                userRepository
+                    .findByEmail("admin@aegis-demo.local")
+                    .orElseThrow()
+                    .getOrganization(),
+                user2Email,
+                "hash",
+                "User",
+                "Two"));
 
-        oAuthAccountLinkService.linkAuthenticatedUser(user1.getId(), IdentityProvider.GOOGLE, sharedSub, user1Email);
+    oAuthAccountLinkService.linkAuthenticatedUser(
+        user1.getId(), IdentityProvider.GOOGLE, sharedSub, user1Email);
 
-        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
-                        oAuthAccountLinkService.linkAuthenticatedUser(user2.getId(), IdentityProvider.GOOGLE, sharedSub, user2Email))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("already linked to another account");
-    }
+    org.assertj.core.api.Assertions.assertThatThrownBy(
+            () ->
+                oAuthAccountLinkService.linkAuthenticatedUser(
+                    user2.getId(), IdentityProvider.GOOGLE, sharedSub, user2Email))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("already linked to another account");
+  }
 
-    @Test
-    @DisplayName("Should reject linking when Google identity is already linked to the same user")
-    void testLinkAccount_conflictWhenIdentityAlreadyLinkedToSameUser() {
-        String ownSub = "own-sub-" + UUID.randomUUID();
-        User user = userRepository.findByEmail("admin@aegis-demo.local").orElseThrow();
+  @Test
+  @DisplayName("Should reject linking when Google identity is already linked to the same user")
+  void testLinkAccount_conflictWhenIdentityAlreadyLinkedToSameUser() {
+    String ownSub = "own-sub-" + UUID.randomUUID();
+    User user = userRepository.findByEmail("admin@aegis-demo.local").orElseThrow();
 
-        oAuthAccountLinkService.linkAuthenticatedUser(user.getId(), IdentityProvider.GOOGLE, ownSub, user.getEmail());
+    oAuthAccountLinkService.linkAuthenticatedUser(
+        user.getId(), IdentityProvider.GOOGLE, ownSub, user.getEmail());
 
-        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
-                        oAuthAccountLinkService.linkAuthenticatedUser(user.getId(), IdentityProvider.GOOGLE, ownSub, user.getEmail()))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("already linked to this account");
-    }
+    org.assertj.core.api.Assertions.assertThatThrownBy(
+            () ->
+                oAuthAccountLinkService.linkAuthenticatedUser(
+                    user.getId(), IdentityProvider.GOOGLE, ownSub, user.getEmail()))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("already linked to this account");
+  }
 }

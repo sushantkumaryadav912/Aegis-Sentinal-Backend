@@ -19,74 +19,74 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class RegisterOrganizationService {
 
-    private final OrganizationRepository organizationRepository;
-    private final WorkspaceRepository workspaceRepository;
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final UserRoleRepository userRoleRepository;
-    private final PasswordHasher passwordHasher;
-    private final CreateSessionService createSessionService;
+  private final OrganizationRepository organizationRepository;
+  private final WorkspaceRepository workspaceRepository;
+  private final UserRepository userRepository;
+  private final RoleRepository roleRepository;
+  private final UserRoleRepository userRoleRepository;
+  private final PasswordHasher passwordHasher;
+  private final CreateSessionService createSessionService;
 
-    public RegisterOrganizationService(
-            OrganizationRepository organizationRepository,
-            WorkspaceRepository workspaceRepository,
-            UserRepository userRepository,
-            RoleRepository roleRepository,
-            UserRoleRepository userRoleRepository,
-            PasswordHasher passwordHasher,
-            CreateSessionService createSessionService) {
+  public RegisterOrganizationService(
+      OrganizationRepository organizationRepository,
+      WorkspaceRepository workspaceRepository,
+      UserRepository userRepository,
+      RoleRepository roleRepository,
+      UserRoleRepository userRoleRepository,
+      PasswordHasher passwordHasher,
+      CreateSessionService createSessionService) {
 
-        this.organizationRepository = organizationRepository;
-        this.workspaceRepository = workspaceRepository;
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.userRoleRepository = userRoleRepository;
-        this.passwordHasher = passwordHasher;
-        this.createSessionService = createSessionService;
+    this.organizationRepository = organizationRepository;
+    this.workspaceRepository = workspaceRepository;
+    this.userRepository = userRepository;
+    this.roleRepository = roleRepository;
+    this.userRoleRepository = userRoleRepository;
+    this.passwordHasher = passwordHasher;
+    this.createSessionService = createSessionService;
+  }
+
+  @Transactional
+  public AuthenticationResult execute(RegisterOrganizationCommand command) {
+
+    if (userRepository.existsByEmail(command.email())) {
+      throw new IllegalArgumentException("Email is already registered");
     }
 
-    @Transactional
-    public AuthenticationResult execute(RegisterOrganizationCommand command) {
-
-        if (userRepository.existsByEmail(command.email())) {
-            throw new IllegalArgumentException("Email is already registered");
-        }
-
-        if (organizationRepository.existsBySlug(command.organizationSlug())) {
-            throw new IllegalArgumentException("Organization slug is already taken");
-        }
-
-        Organization organization = organizationRepository.save(
-                Organization.create(command.organizationName(), command.organizationSlug())
-        );
-
-        if (workspaceRepository.existsByOrganizationIdAndSlug(organization.getId(), command.workspaceSlug())) {
-            throw new IllegalArgumentException("Workspace slug is already taken for this organization");
-        }
-
-        Workspace workspace = workspaceRepository.save(
-                Workspace.create(organization, command.workspaceName(), command.workspaceSlug())
-        );
-
-        String passwordHash = passwordHasher.hash(command.password());
-
-        User user = userRepository.save(
-                User.create(
-                        organization,
-                        command.email(),
-                        passwordHash,
-                        command.firstName(),
-                        command.lastName()
-                )
-        );
-
-        Role orgAdminRole = roleRepository.findByName("ORG_ADMIN")
-                .orElseThrow(() -> new IllegalStateException("System role ORG_ADMIN not found"));
-
-        userRoleRepository.save(
-                UserRole.create(user, orgAdminRole, organization, workspace)
-        );
-
-        return createSessionService.issueTokensAndCreateSession(user);
+    if (organizationRepository.existsBySlug(command.organizationSlug())) {
+      throw new IllegalArgumentException("Organization slug is already taken");
     }
+
+    Organization organization =
+        organizationRepository.save(
+            Organization.create(command.organizationName(), command.organizationSlug()));
+
+    if (workspaceRepository.existsByOrganizationIdAndSlug(
+        organization.getId(), command.workspaceSlug())) {
+      throw new IllegalArgumentException("Workspace slug is already taken for this organization");
+    }
+
+    Workspace workspace =
+        workspaceRepository.save(
+            Workspace.create(organization, command.workspaceName(), command.workspaceSlug()));
+
+    String passwordHash = passwordHasher.hash(command.password());
+
+    User user =
+        userRepository.save(
+            User.create(
+                organization,
+                command.email(),
+                passwordHash,
+                command.firstName(),
+                command.lastName()));
+
+    Role orgAdminRole =
+        roleRepository
+            .findByName("ORG_ADMIN")
+            .orElseThrow(() -> new IllegalStateException("System role ORG_ADMIN not found"));
+
+    userRoleRepository.save(UserRole.create(user, orgAdminRole, organization, workspace));
+
+    return createSessionService.issueTokensAndCreateSession(user);
+  }
 }

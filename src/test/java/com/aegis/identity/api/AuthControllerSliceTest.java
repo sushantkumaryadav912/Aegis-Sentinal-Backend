@@ -22,39 +22,42 @@ import org.springframework.web.context.WebApplicationContext;
 @SpringBootTest
 class AuthControllerSliceTest {
 
-    @Autowired
-    private WebApplicationContext context;
+  @Autowired private WebApplicationContext context;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private MockMvc mockMvc;
+  private final ObjectMapper objectMapper = new ObjectMapper();
+  private MockMvc mockMvc;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .apply(springSecurity())
-                .build();
-    }
+  @BeforeEach
+  void setUp() {
+    mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+  }
 
-    @Test
-    @DisplayName("Controller Test: /api/aegis/v1/auth/register creates organization and returns 200 OK with tokens")
-    void testRegisterEndpoint_returnsTokens() throws Exception {
-        String unique = UUID.randomUUID().toString();
-        RegisterRequest req = new RegisterRequest(
-                "Controller Org " + unique, "ctrl-org-" + unique,
-                "Controller Workspace", "ctrl-ws-" + unique,
-                "ctrl-" + unique + "@aegis.test",
-                "Password123!",
-                "Ctrl", "User"
-        );
+  @Test
+  @DisplayName(
+      "Controller Test: /api/aegis/v1/auth/register creates organization and returns 200 OK with tokens")
+  void testRegisterEndpoint_returnsTokens() throws Exception {
+    String unique = UUID.randomUUID().toString();
+    RegisterRequest req =
+        new RegisterRequest(
+            "Controller Org " + unique,
+            "ctrl-org-" + unique,
+            "Controller Workspace",
+            "ctrl-ws-" + unique,
+            "ctrl-" + unique + "@aegis.test",
+            "Password123!",
+            "Ctrl",
+            "User");
 
-        MvcResult result = mockMvc.perform(post("/api/aegis/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isCreated())
-                .andReturn();
+    MvcResult result =
+        mockMvc
+            .perform(
+                post("/api/aegis/v1/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(req)))
+            .andExpect(status().isCreated())
+            .andReturn();
 
-        assertThat(result.getResponse().getContentAsString()).contains("accessToken");
-        assertThat(result.getResponse().getContentAsString()).contains("refreshToken");
-    }
+    assertThat(result.getResponse().getContentAsString()).contains("accessToken");
+    assertThat(result.getResponse().getContentAsString()).contains("refreshToken");
+  }
 }

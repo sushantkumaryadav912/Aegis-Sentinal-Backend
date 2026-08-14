@@ -11,16 +11,17 @@ import org.junit.jupiter.api.Test;
 
 class UserIdentityEntityTest {
 
-    @Test
-    @DisplayName("Domain Unit Test: UserIdentity constructor assigns fields correctly")
-    void testUserIdentity_constructor_assignsFields() {
-        Organization org = Organization.create("Test Org", "test-org");
-        User user = User.create(org, "test@aegis.local", "hashedPassword123", "Jane", "Doe");
-        UserIdentity identity = new UserIdentity(user, IdentityProvider.GOOGLE, "google-sub-12345", "jane.doe@gmail.com");
+  @Test
+  @DisplayName("Domain Unit Test: UserIdentity constructor assigns fields correctly")
+  void testUserIdentity_constructor_assignsFields() {
+    Organization org = Organization.create("Test Org", "test-org");
+    User user = User.create(org, "test@aegis.local", "hashedPassword123", "Jane", "Doe");
+    UserIdentity identity =
+        new UserIdentity(user, IdentityProvider.GOOGLE, "google-sub-12345", "jane.doe@gmail.com");
 
-        assertThat(identity.getUser()).isEqualTo(user);
-        assertThat(identity.getProvider()).isEqualTo(IdentityProvider.GOOGLE);
-        assertThat(identity.getProviderSubject()).isEqualTo("google-sub-12345");
-        assertThat(identity.getProviderEmail()).isEqualTo("jane.doe@gmail.com");
-    }
+    assertThat(identity.getUser()).isEqualTo(user);
+    assertThat(identity.getProvider()).isEqualTo(IdentityProvider.GOOGLE);
+    assertThat(identity.getProviderSubject()).isEqualTo("google-sub-12345");
+    assertThat(identity.getProviderEmail()).isEqualTo("jane.doe@gmail.com");
+  }
 }

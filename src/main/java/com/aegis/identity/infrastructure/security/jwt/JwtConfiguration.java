@@ -15,33 +15,23 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 @Configuration
 public class JwtConfiguration {
 
-    @Bean
-    SecretKey jwtSecretKey(JwtProperties properties) {
+  @Bean
+  SecretKey jwtSecretKey(JwtProperties properties) {
 
-        byte[] keyBytes = properties.secret()
-                .getBytes(StandardCharsets.UTF_8);
+    byte[] keyBytes = properties.secret().getBytes(StandardCharsets.UTF_8);
 
-        return new SecretKeySpec(
-                keyBytes,
-                "HmacSHA256"
-        );
-    }
+    return new SecretKeySpec(keyBytes, "HmacSHA256");
+  }
 
-    @Bean
-    JwtEncoder jwtEncoder(SecretKey jwtSecretKey) {
+  @Bean
+  JwtEncoder jwtEncoder(SecretKey jwtSecretKey) {
 
-        return new NimbusJwtEncoder(
-                new ImmutableSecret<>(jwtSecretKey)
-        );
-    }
+    return new NimbusJwtEncoder(new ImmutableSecret<>(jwtSecretKey));
+  }
 
-    @Bean
-    JwtDecoder jwtDecoder(
-            SecretKey jwtSecretKey,
-            JwtProperties properties) {
+  @Bean
+  JwtDecoder jwtDecoder(SecretKey jwtSecretKey, JwtProperties properties) {
 
-        return NimbusJwtDecoder.withSecretKey(jwtSecretKey)
-                .macAlgorithm(MacAlgorithm.HS256)
-                .build();
-    }
+    return NimbusJwtDecoder.withSecretKey(jwtSecretKey).macAlgorithm(MacAlgorithm.HS256).build();
+  }
 }

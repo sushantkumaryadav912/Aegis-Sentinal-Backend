@@ -28,29 +28,27 @@ import org.hibernate.annotations.CreationTimestamp;
 @Builder
 public class Role {
 
-    @Id
-    private UUID id;
+  @Id private UUID id;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private String name;
+  @Column(nullable = false, unique = true, length = 100)
+  private String name;
 
-    @Column(length = 255)
-    private String description;
+  @Column(length = 255)
+  private String description;
 
-    @Builder.Default
-    @Column(name = "is_system_role", nullable = false)
-    private Boolean isSystemRole = true;
+  @Builder.Default
+  @Column(name = "is_system_role", nullable = false)
+  private Boolean isSystemRole = true;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+  @CreationTimestamp
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private Instant createdAt;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "role_permissions",
-        joinColumns = @JoinColumn(name = "role_id"),
-        inverseJoinColumns = @JoinColumn(name = "permission_id")
-    )
-    @Builder.Default
-    private Set<Permission> permissions = new HashSet<>();
+  @ManyToMany(fetch = FetchType.EAGER)
+  @JoinTable(
+      name = "role_permissions",
+      joinColumns = @JoinColumn(name = "role_id"),
+      inverseJoinColumns = @JoinColumn(name = "permission_id"))
+  @Builder.Default
+  private Set<Permission> permissions = new HashSet<>();
 }

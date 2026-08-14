@@ -23,42 +23,47 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepository;
-    private final UserRoleRepository userRoleRepository;
+  private final UserRepository userRepository;
+  private final UserRoleRepository userRoleRepository;
 
-    @Override
-    @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+  @Override
+  @Transactional(readOnly = true)
+  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    User user =
+        userRepository
+            .findByEmail(email)
+            .orElseThrow(
+                () -> new UsernameNotFoundException("User not found with email: " + email));
 
-        return buildUserPrincipal(user);
-    }
+    return buildUserPrincipal(user);
+  }
 
-    @Transactional(readOnly = true)
-    public UserDetails loadUserById(UUID userId) {
-        User user = userRepository.findById(userId)
+  @Transactional(readOnly = true)
+  public UserDetails loadUserById(UUID userId) {
+    User user =
+        userRepository
+            .findById(userId)
             .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId));
 
-        return buildUserPrincipal(user);
+    return buildUserPrincipal(user);
+  }
+
+  private UserPrincipal buildUserPrincipal(User user) {
+    List<UserRole> userRoles = userRoleRepository.findByUserId(user.getId());
+
+    Set<String> roles = new HashSet<>();
+    Set<GrantedAuthority> authorities = new HashSet<>();
+
+    for (UserRole userRole : userRoles) {
+      Role role = userRole.getRole();
+      roles.add(role.getName());
+      authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
+
+      for (Permission permission : role.getPermissions()) {
+        authorities.add(new SimpleGrantedAuthority(permission.getName()));
+      }
     }
 
-    private UserPrincipal buildUserPrincipal(User user) {
-        List<UserRole> userRoles = userRoleRepository.findByUserId(user.getId());
-
-        Set<String> roles = new HashSet<>();
-        Set<GrantedAuthority> authorities = new HashSet<>();
-
-        for (UserRole userRole : userRoles) {
-            Role role = userRole.getRole();
-            roles.add(role.getName());
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
-
-            for (Permission permission : role.getPermissions()) {
-                authorities.add(new SimpleGrantedAuthority(permission.getName()));
-            }
-        }
-
-        return UserPrincipal.create(user, roles, authorities);
-    }
+    return UserPrincipal.create(user, roles, authorities);
+  }
 }

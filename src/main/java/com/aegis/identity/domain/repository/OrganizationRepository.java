@@ -6,11 +6,11 @@ import java.util.UUID;
 
 public interface OrganizationRepository {
 
-    Optional<Organization> findById(UUID id);
+  Optional<Organization> findById(UUID id);
 
-    Optional<Organization> findBySlug(String slug);
+  Optional<Organization> findBySlug(String slug);
 
-    boolean existsBySlug(String slug);
+  boolean existsBySlug(String slug);
 
-    Organization save(Organization organization);
+  Organization save(Organization organization);
 }

@@ -7,13 +7,13 @@ import java.util.UUID;
 
 public interface WorkspaceRepository {
 
-    Optional<Workspace> findById(UUID id);
+  Optional<Workspace> findById(UUID id);
 
-    List<Workspace> findByOrganizationId(UUID organizationId);
+  List<Workspace> findByOrganizationId(UUID organizationId);
 
-    Optional<Workspace> findByOrganizationIdAndSlug(UUID organizationId, String slug);
+  Optional<Workspace> findByOrganizationIdAndSlug(UUID organizationId, String slug);
 
-    boolean existsByOrganizationIdAndSlug(UUID organizationId, String slug);
+  boolean existsByOrganizationIdAndSlug(UUID organizationId, String slug);
 
-    Workspace save(Workspace workspace);
+  Workspace save(Workspace workspace);
 }

@@ -2,23 +2,19 @@ package com.aegis.identity.infrastructure.security.tenant;
 
 import java.util.UUID;
 
-public record TenantContext(
-        UUID userId,
-        UUID organizationId,
-        UUID workspaceId
-) {
+public record TenantContext(UUID userId, UUID organizationId, UUID workspaceId) {
 
-    private static final ThreadLocal<TenantContext> CURRENT_TENANT = new ThreadLocal<>();
+  private static final ThreadLocal<TenantContext> CURRENT_TENANT = new ThreadLocal<>();
 
-    public static void set(TenantContext context) {
-        CURRENT_TENANT.set(context);
-    }
+  public static void set(TenantContext context) {
+    CURRENT_TENANT.set(context);
+  }
 
-    public static TenantContext get() {
-        return CURRENT_TENANT.get();
-    }
+  public static TenantContext get() {
+    return CURRENT_TENANT.get();
+  }
 
-    public static void clear() {
-        CURRENT_TENANT.remove();
-    }
+  public static void clear() {
+    CURRENT_TENANT.remove();
+  }
 }

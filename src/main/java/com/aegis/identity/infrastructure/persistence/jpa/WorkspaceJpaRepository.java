@@ -8,9 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface WorkspaceJpaRepository extends JpaRepository<Workspace, UUID> {
 
-    List<Workspace> findByOrganizationId(UUID organizationId);
+  List<Workspace> findByOrganizationId(UUID organizationId);
 
-    Optional<Workspace> findByOrganizationIdAndSlug(UUID organizationId, String slug);
+  Optional<Workspace> findByOrganizationIdAndSlug(UUID organizationId, String slug);
 
-    boolean existsByOrganizationIdAndSlug(UUID organizationId, String slug);
+  boolean existsByOrganizationIdAndSlug(UUID organizationId, String slug);
 }

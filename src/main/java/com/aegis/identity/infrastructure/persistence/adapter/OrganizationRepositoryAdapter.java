@@ -10,29 +10,29 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class OrganizationRepositoryAdapter implements OrganizationRepository {
 
-    private final OrganizationJpaRepository repository;
+  private final OrganizationJpaRepository repository;
 
-    public OrganizationRepositoryAdapter(OrganizationJpaRepository repository) {
-        this.repository = repository;
-    }
+  public OrganizationRepositoryAdapter(OrganizationJpaRepository repository) {
+    this.repository = repository;
+  }
 
-    @Override
-    public Optional<Organization> findById(UUID id) {
-        return repository.findById(id);
-    }
+  @Override
+  public Optional<Organization> findById(UUID id) {
+    return repository.findById(id);
+  }
 
-    @Override
-    public Optional<Organization> findBySlug(String slug) {
-        return repository.findBySlug(slug);
-    }
+  @Override
+  public Optional<Organization> findBySlug(String slug) {
+    return repository.findBySlug(slug);
+  }
 
-    @Override
-    public boolean existsBySlug(String slug) {
-        return repository.existsBySlug(slug);
-    }
+  @Override
+  public boolean existsBySlug(String slug) {
+    return repository.existsBySlug(slug);
+  }
 
-    @Override
-    public Organization save(Organization organization) {
-        return repository.save(organization);
-    }
+  @Override
+  public Organization save(Organization organization) {
+    return repository.save(organization);
+  }
 }

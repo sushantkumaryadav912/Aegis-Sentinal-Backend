@@ -20,15 +20,14 @@ import lombok.Setter;
 @Builder
 public class Permission {
 
-    @Id
-    private UUID id;
+  @Id private UUID id;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private String name;
+  @Column(nullable = false, unique = true, length = 100)
+  private String name;
 
-    @Column(length = 255)
-    private String description;
+  @Column(length = 255)
+  private String description;
 
-    @Column(nullable = false, length = 50)
-    private String category;
+  @Column(nullable = false, length = 50)
+  private String category;
 }

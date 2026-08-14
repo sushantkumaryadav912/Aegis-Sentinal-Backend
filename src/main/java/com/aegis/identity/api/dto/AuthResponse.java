@@ -15,14 +15,13 @@ import lombok.Setter;
 @Builder
 public class AuthResponse {
 
-    private String accessToken;
-    private String refreshToken;
-    @Builder.Default
-    private String tokenType = "Bearer";
-    private UUID userId;
-    private UUID organizationId;
-    private String email;
-    private String firstName;
-    private String lastName;
-    private Set<String> roles;
+  private String accessToken;
+  private String refreshToken;
+  @Builder.Default private String tokenType = "Bearer";
+  private UUID userId;
+  private UUID organizationId;
+  private String email;
+  private String firstName;
+  private String lastName;
+  private Set<String> roles;
 }

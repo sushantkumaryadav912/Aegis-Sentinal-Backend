@@ -14,41 +14,45 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthenticateUserService {
 
-    private final UserRepository userRepository;
-    private final PasswordHasher passwordHasher;
-    private final CreateSessionService createSessionService;
-    private final SecurityAuditLogger auditLogger;
+  private final UserRepository userRepository;
+  private final PasswordHasher passwordHasher;
+  private final CreateSessionService createSessionService;
+  private final SecurityAuditLogger auditLogger;
 
-    public AuthenticateUserService(
-            UserRepository userRepository,
-            PasswordHasher passwordHasher,
-            CreateSessionService createSessionService,
-            SecurityAuditLogger auditLogger) {
-        this.userRepository = userRepository;
-        this.passwordHasher = passwordHasher;
-        this.createSessionService = createSessionService;
-        this.auditLogger = auditLogger;
+  public AuthenticateUserService(
+      UserRepository userRepository,
+      PasswordHasher passwordHasher,
+      CreateSessionService createSessionService,
+      SecurityAuditLogger auditLogger) {
+    this.userRepository = userRepository;
+    this.passwordHasher = passwordHasher;
+    this.createSessionService = createSessionService;
+    this.auditLogger = auditLogger;
+  }
+
+  @Transactional
+  public AuthenticationResult execute(LoginUserCommand command) {
+
+    User user =
+        userRepository
+            .findByEmail(command.email())
+            .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+
+    if (!user.isActive()) {
+      throw new IllegalStateException("User account is inactive");
     }
 
-    @Transactional
-    public AuthenticationResult execute(LoginUserCommand command) {
-
-        User user = userRepository.findByEmail(command.email())
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Invalid email or password"));
-
-        if (!user.isActive()) {
-            throw new IllegalStateException("User account is inactive");
-        }
-
-        if (!passwordHasher.matches(
-                command.password(),
-                user.getPasswordHash())) {
-            throw new IllegalArgumentException("Invalid email or password");
-        }
-
-        AuthenticationResult result = createSessionService.issueTokensAndCreateSession(user);
-        auditLogger.logEvent(SecurityAuditEvent.of(AuditEventType.AUTH_LOGIN_SUCCESS, user.getId(), "SUCCESS", "Local password login successful"));
-        return result;
+    if (!passwordHasher.matches(command.password(), user.getPasswordHash())) {
+      throw new IllegalArgumentException("Invalid email or password");
     }
+
+    AuthenticationResult result = createSessionService.issueTokensAndCreateSession(user);
+    auditLogger.logEvent(
+        SecurityAuditEvent.of(
+            AuditEventType.AUTH_LOGIN_SUCCESS,
+            user.getId(),
+            "SUCCESS",
+            "Local password login successful"));
+    return result;
+  }
 }

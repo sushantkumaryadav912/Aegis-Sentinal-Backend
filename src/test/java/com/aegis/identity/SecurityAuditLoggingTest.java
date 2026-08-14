@@ -14,20 +14,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class SecurityAuditLoggingTest {
 
-    @Autowired
-    private SecurityAuditLogger securityAuditLogger;
+  @Autowired private SecurityAuditLogger securityAuditLogger;
 
-    @Test
-    @DisplayName("5.11 Audit Logging: SecurityAuditLogger publishes structured JSON audit events without throwing exceptions")
-    void testSecurityAuditLogging_publishesStructuredJson() {
-        SecurityAuditEvent event = SecurityAuditEvent.of(
-                AuditEventType.AUTH_LOGIN_SUCCESS,
-                UUID.randomUUID(),
-                "SUCCESS",
-                "Audit log verification test"
-        );
+  @Test
+  @DisplayName(
+      "5.11 Audit Logging: SecurityAuditLogger publishes structured JSON audit events without throwing exceptions")
+  void testSecurityAuditLogging_publishesStructuredJson() {
+    SecurityAuditEvent event =
+        SecurityAuditEvent.of(
+            AuditEventType.AUTH_LOGIN_SUCCESS,
+            UUID.randomUUID(),
+            "SUCCESS",
+            "Audit log verification test");
 
-        assertThatCode(() -> securityAuditLogger.logEvent(event))
-                .doesNotThrowAnyException();
-    }
+    assertThatCode(() -> securityAuditLogger.logEvent(event)).doesNotThrowAnyException();
+  }
 }

@@ -1,6 +1,3 @@
 package com.aegis.identity.application.command;
 
-public record LogoutCommand(
-        String refreshToken
-) {
-}
+public record LogoutCommand(String refreshToken) {}

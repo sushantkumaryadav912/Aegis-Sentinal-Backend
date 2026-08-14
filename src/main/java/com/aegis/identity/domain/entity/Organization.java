@@ -25,28 +25,25 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Builder
 public class Organization {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
-    @Column(nullable = false)
-    private String name;
+  @Column(nullable = false)
+  private String name;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private String slug;
+  @Column(nullable = false, unique = true, length = 100)
+  private String slug;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+  @CreationTimestamp
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private Instant createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
+  @UpdateTimestamp
+  @Column(name = "updated_at", nullable = false)
+  private Instant updatedAt;
 
-    public static Organization create(String name, String slug) {
-        return Organization.builder()
-                .name(name)
-                .slug(slug)
-                .build();
-    }
+  public static Organization create(String name, String slug) {
+    return Organization.builder().name(name).slug(slug).build();
+  }
 }

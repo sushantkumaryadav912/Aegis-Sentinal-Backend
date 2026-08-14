@@ -7,13 +7,10 @@ import java.util.UUID;
 
 public interface UserIdentityRepository {
 
-    Optional<UserIdentity> findByProviderAndProviderSubject(
-            IdentityProvider provider,
-            String providerSubject);
+  Optional<UserIdentity> findByProviderAndProviderSubject(
+      IdentityProvider provider, String providerSubject);
 
-    Optional<UserIdentity> findByUserIdAndProvider(
-            UUID userId,
-            IdentityProvider provider);
+  Optional<UserIdentity> findByUserIdAndProvider(UUID userId, IdentityProvider provider);
 
-    UserIdentity save(UserIdentity userIdentity);
+  UserIdentity save(UserIdentity userIdentity);
 }

@@ -27,56 +27,56 @@ import org.hibernate.annotations.CreationTimestamp;
 @Builder
 public class Session {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
 
-    @Column(name = "refresh_token_hash", nullable = false, unique = true)
-    private String refreshTokenHash;
+  @Column(name = "refresh_token_hash", nullable = false, unique = true)
+  private String refreshTokenHash;
 
-    @Column(name = "ip_address", length = 45)
-    private String ipAddress;
+  @Column(name = "ip_address", length = 45)
+  private String ipAddress;
 
-    @Column(name = "user_agent", length = 500)
-    private String userAgent;
+  @Column(name = "user_agent", length = 500)
+  private String userAgent;
 
-    @Column(name = "expires_at", nullable = false)
-    private Instant expiresAt;
+  @Column(name = "expires_at", nullable = false)
+  private Instant expiresAt;
 
-    @Builder.Default
-    @Column(nullable = false)
-    private Boolean revoked = false;
+  @Builder.Default
+  @Column(nullable = false)
+  private Boolean revoked = false;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+  @CreationTimestamp
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private Instant createdAt;
 
-    public static Session create(User user, String refreshTokenHash, Instant expiresAt) {
-        return Session.builder()
-                .user(user)
-                .refreshTokenHash(refreshTokenHash)
-                .expiresAt(expiresAt)
-                .revoked(false)
-                .build();
-    }
+  public static Session create(User user, String refreshTokenHash, Instant expiresAt) {
+    return Session.builder()
+        .user(user)
+        .refreshTokenHash(refreshTokenHash)
+        .expiresAt(expiresAt)
+        .revoked(false)
+        .build();
+  }
 
-    public static Session create(User user, String refreshTokenHash) {
-        return create(user, refreshTokenHash, Instant.now().plus(java.time.Duration.ofDays(7)));
-    }
+  public static Session create(User user, String refreshTokenHash) {
+    return create(user, refreshTokenHash, Instant.now().plus(java.time.Duration.ofDays(7)));
+  }
 
-    public boolean isExpired() {
-        return expiresAt != null && expiresAt.isBefore(Instant.now());
-    }
+  public boolean isExpired() {
+    return expiresAt != null && expiresAt.isBefore(Instant.now());
+  }
 
-    public boolean isActive() {
-        return !Boolean.TRUE.equals(revoked) && !isExpired();
-    }
+  public boolean isActive() {
+    return !Boolean.TRUE.equals(revoked) && !isExpired();
+  }
 
-    public void revoke() {
-        this.revoked = true;
-    }
+  public void revoke() {
+    this.revoked = true;
+  }
 }

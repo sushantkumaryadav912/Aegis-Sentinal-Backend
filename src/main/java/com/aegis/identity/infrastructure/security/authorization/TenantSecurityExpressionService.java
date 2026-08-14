@@ -13,77 +13,81 @@ import org.springframework.transaction.annotation.Transactional;
 @Component("tenantSecurity")
 public class TenantSecurityExpressionService {
 
-    private final UserRoleRepository userRoleRepository;
+  private final UserRoleRepository userRoleRepository;
 
-    public TenantSecurityExpressionService(UserRoleRepository userRoleRepository) {
-        this.userRoleRepository = userRoleRepository;
+  public TenantSecurityExpressionService(UserRoleRepository userRoleRepository) {
+    this.userRoleRepository = userRoleRepository;
+  }
+
+  @Transactional(readOnly = true)
+  public boolean hasPermission(UUID organizationId, String requiredPermission) {
+    UUID userId = getCurrentUserId();
+    if (userId == null || organizationId == null) {
+      return false;
     }
 
-    @Transactional(readOnly = true)
-    public boolean hasPermission(UUID organizationId, String requiredPermission) {
-        UUID userId = getCurrentUserId();
-        if (userId == null || organizationId == null) {
-            return false;
-        }
-
-        List<UserRole> userRoles = userRoleRepository.findByUserIdAndOrganizationId(userId, organizationId);
-        if (userRoles.isEmpty()) {
-            return false;
-        }
-
-        return userRoles.stream()
-                .map(ur -> ur.getRole())
-                .filter(role -> role != null && role.getPermissions() != null)
-                .flatMap(role -> role.getPermissions().stream())
-                .map(perm -> perm.getName())
-                .anyMatch(permName -> permName.equals(requiredPermission));
+    List<UserRole> userRoles =
+        userRoleRepository.findByUserIdAndOrganizationId(userId, organizationId);
+    if (userRoles.isEmpty()) {
+      return false;
     }
 
-    @Transactional(readOnly = true)
-    public boolean hasWorkspacePermission(UUID organizationId, UUID workspaceId, String requiredPermission) {
-        UUID userId = getCurrentUserId();
-        if (userId == null || organizationId == null || workspaceId == null) {
-            return false;
-        }
+    return userRoles.stream()
+        .map(ur -> ur.getRole())
+        .filter(role -> role != null && role.getPermissions() != null)
+        .flatMap(role -> role.getPermissions().stream())
+        .map(perm -> perm.getName())
+        .anyMatch(permName -> permName.equals(requiredPermission));
+  }
 
-        List<UserRole> userRoles = userRoleRepository.findByUserIdAndOrganizationId(userId, organizationId);
-        if (userRoles.isEmpty()) {
-            return false;
-        }
-
-        return userRoles.stream()
-                .filter(ur -> ur.getWorkspace() == null || ur.getWorkspace().getId().equals(workspaceId))
-                .map(ur -> ur.getRole())
-                .filter(role -> role != null && role.getPermissions() != null)
-                .flatMap(role -> role.getPermissions().stream())
-                .map(perm -> perm.getName())
-                .anyMatch(permName -> permName.equals(requiredPermission));
+  @Transactional(readOnly = true)
+  public boolean hasWorkspacePermission(
+      UUID organizationId, UUID workspaceId, String requiredPermission) {
+    UUID userId = getCurrentUserId();
+    if (userId == null || organizationId == null || workspaceId == null) {
+      return false;
     }
 
-    @Transactional(readOnly = true)
-    public boolean hasRole(UUID organizationId, String requiredRoleName) {
-        UUID userId = getCurrentUserId();
-        if (userId == null || organizationId == null) {
-            return false;
-        }
-
-        List<UserRole> userRoles = userRoleRepository.findByUserIdAndOrganizationId(userId, organizationId);
-        return userRoles.stream()
-                .map(ur -> ur.getRole())
-                .filter(role -> role != null)
-                .map(role -> role.getName())
-                .anyMatch(roleName -> roleName.equals(requiredRoleName));
+    List<UserRole> userRoles =
+        userRoleRepository.findByUserIdAndOrganizationId(userId, organizationId);
+    if (userRoles.isEmpty()) {
+      return false;
     }
 
-    private UUID getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
-            try {
-                return UUID.fromString(jwt.getSubject());
-            } catch (IllegalArgumentException e) {
-                return null;
-            }
-        }
+    return userRoles.stream()
+        .filter(ur -> ur.getWorkspace() == null || ur.getWorkspace().getId().equals(workspaceId))
+        .map(ur -> ur.getRole())
+        .filter(role -> role != null && role.getPermissions() != null)
+        .flatMap(role -> role.getPermissions().stream())
+        .map(perm -> perm.getName())
+        .anyMatch(permName -> permName.equals(requiredPermission));
+  }
+
+  @Transactional(readOnly = true)
+  public boolean hasRole(UUID organizationId, String requiredRoleName) {
+    UUID userId = getCurrentUserId();
+    if (userId == null || organizationId == null) {
+      return false;
+    }
+
+    List<UserRole> userRoles =
+        userRoleRepository.findByUserIdAndOrganizationId(userId, organizationId);
+    return userRoles.stream()
+        .map(ur -> ur.getRole())
+        .filter(role -> role != null)
+        .map(role -> role.getName())
+        .anyMatch(roleName -> roleName.equals(requiredRoleName));
+  }
+
+  private UUID getCurrentUserId() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
+      try {
+        return UUID.fromString(jwt.getSubject());
+      } catch (IllegalArgumentException e) {
         return null;
+      }
     }
+    return null;
+  }
 }

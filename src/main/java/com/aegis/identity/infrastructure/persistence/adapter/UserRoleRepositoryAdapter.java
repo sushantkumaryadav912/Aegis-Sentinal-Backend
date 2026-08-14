@@ -11,34 +11,34 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class UserRoleRepositoryAdapter implements UserRoleRepository {
 
-    private final UserRoleJpaRepository repository;
+  private final UserRoleJpaRepository repository;
 
-    public UserRoleRepositoryAdapter(UserRoleJpaRepository repository) {
-        this.repository = repository;
-    }
+  public UserRoleRepositoryAdapter(UserRoleJpaRepository repository) {
+    this.repository = repository;
+  }
 
-    @Override
-    public Optional<UserRole> findById(UUID id) {
-        return repository.findById(id);
-    }
+  @Override
+  public Optional<UserRole> findById(UUID id) {
+    return repository.findById(id);
+  }
 
-    @Override
-    public List<UserRole> findByUserId(UUID userId) {
-        return repository.findByUserId(userId);
-    }
+  @Override
+  public List<UserRole> findByUserId(UUID userId) {
+    return repository.findByUserId(userId);
+  }
 
-    @Override
-    public List<UserRole> findByUserIdAndOrganizationId(UUID userId, UUID organizationId) {
-        return repository.findByUserIdAndOrganizationId(userId, organizationId);
-    }
+  @Override
+  public List<UserRole> findByUserIdAndOrganizationId(UUID userId, UUID organizationId) {
+    return repository.findByUserIdAndOrganizationId(userId, organizationId);
+  }
 
-    @Override
-    public UserRole save(UserRole userRole) {
-        return repository.save(userRole);
-    }
+  @Override
+  public UserRole save(UserRole userRole) {
+    return repository.save(userRole);
+  }
 
-    @Override
-    public void deleteById(UUID id) {
-        repository.deleteById(id);
-    }
+  @Override
+  public void deleteById(UUID id) {
+    repository.deleteById(id);
+  }
 }

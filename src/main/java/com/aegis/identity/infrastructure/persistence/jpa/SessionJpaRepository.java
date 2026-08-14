@@ -10,11 +10,11 @@ import org.springframework.data.repository.query.Param;
 
 public interface SessionJpaRepository extends JpaRepository<Session, UUID> {
 
-    Optional<Session> findByRefreshTokenHash(String refreshTokenHash);
+  Optional<Session> findByRefreshTokenHash(String refreshTokenHash);
 
-    void deleteByUserId(UUID userId);
+  void deleteByUserId(UUID userId);
 
-    @Modifying
-    @Query("UPDATE Session s SET s.revoked = true WHERE s.user.id = :userId AND s.revoked = false")
-    void revokeAllByUserId(@Param("userId") UUID userId);
+  @Modifying
+  @Query("UPDATE Session s SET s.revoked = true WHERE s.user.id = :userId AND s.revoked = false")
+  void revokeAllByUserId(@Param("userId") UUID userId);
 }

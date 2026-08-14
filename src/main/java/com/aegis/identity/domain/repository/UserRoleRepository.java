@@ -7,13 +7,13 @@ import java.util.UUID;
 
 public interface UserRoleRepository {
 
-    Optional<UserRole> findById(UUID id);
+  Optional<UserRole> findById(UUID id);
 
-    List<UserRole> findByUserId(UUID userId);
+  List<UserRole> findByUserId(UUID userId);
 
-    List<UserRole> findByUserIdAndOrganizationId(UUID userId, UUID organizationId);
+  List<UserRole> findByUserIdAndOrganizationId(UUID userId, UUID organizationId);
 
-    UserRole save(UserRole userRole);
+  UserRole save(UserRole userRole);
 
-    void deleteById(UUID id);
+  void deleteById(UUID id);
 }

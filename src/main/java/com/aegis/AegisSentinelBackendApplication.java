@@ -8,8 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories(basePackages = "com.aegis.identity.infrastructure.persistence.jpa")
 public class AegisSentinelBackendApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(AegisSentinelBackendApplication.class, args);
-    }
-
+  public static void main(String[] args) {
+    SpringApplication.run(AegisSentinelBackendApplication.class, args);
+  }
 }

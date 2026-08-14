@@ -19,77 +19,83 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class RateLimitingFilter extends OncePerRequestFilter {
 
-    private final int maxRequestsPerMinute;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+  private final int maxRequestsPerMinute;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final ConcurrentHashMap<String, RateLimitBucket> buckets = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, RateLimitBucket> buckets = new ConcurrentHashMap<>();
 
-    public RateLimitingFilter(
-            @Value("${aegis.security.rate-limit.auth-per-minute:1000}") int maxRequestsPerMinute) {
-        this.maxRequestsPerMinute = maxRequestsPerMinute;
-    }
+  public RateLimitingFilter(
+      @Value("${aegis.security.rate-limit.auth-per-minute:1000}") int maxRequestsPerMinute) {
+    this.maxRequestsPerMinute = maxRequestsPerMinute;
+  }
 
-    @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain) throws ServletException, IOException {
+  @Override
+  protected void doFilterInternal(
+      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      throws ServletException, IOException {
 
-        String path = request.getRequestURI();
+    String path = request.getRequestURI();
 
-        if (isRateLimitedPath(path)) {
-            String clientIp = extractClientIp(request);
-            RateLimitBucket bucket = buckets.compute(clientIp, (key, existing) -> {
+    if (isRateLimitedPath(path)) {
+      String clientIp = extractClientIp(request);
+      RateLimitBucket bucket =
+          buckets.compute(
+              clientIp,
+              (key, existing) -> {
                 long now = System.currentTimeMillis();
                 if (existing == null || now - existing.startTime > 60_000) {
-                    return new RateLimitBucket(now, new AtomicInteger(1));
+                  return new RateLimitBucket(now, new AtomicInteger(1));
                 }
                 existing.count.incrementAndGet();
                 return existing;
-            });
+              });
 
-            if (bucket.count.get() > maxRequestsPerMinute) {
-                response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                response.setHeader("Retry-After", "60");
+      if (bucket.count.get() > maxRequestsPerMinute) {
+        response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setHeader("Retry-After", "60");
 
-                Map<String, Object> errorBody = Map.of(
-                        "error", "Too Many Requests",
-                        "message", "Rate limit exceeded. Please wait before trying again.",
-                        "status", 429,
-                        "timestamp", Instant.now().toString()
-                );
+        Map<String, Object> errorBody =
+            Map.of(
+                "error",
+                "Too Many Requests",
+                "message",
+                "Rate limit exceeded. Please wait before trying again.",
+                "status",
+                429,
+                "timestamp",
+                Instant.now().toString());
 
-                objectMapper.writeValue(response.getWriter(), errorBody);
-                return;
-            }
-        }
-
-        filterChain.doFilter(request, response);
+        objectMapper.writeValue(response.getWriter(), errorBody);
+        return;
+      }
     }
 
-    private boolean isRateLimitedPath(String path) {
-        return path.startsWith("/api/aegis/v1/auth/login")
-                || path.startsWith("/api/aegis/v1/auth/register")
-                || path.startsWith("/api/aegis/v1/auth/refresh")
-                || path.startsWith("/api/aegis/v1/auth/link-account");
-    }
+    filterChain.doFilter(request, response);
+  }
 
-    private String extractClientIp(HttpServletRequest request) {
-        String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null || xfHeader.isBlank()) {
-            return request.getRemoteAddr();
-        }
-        return xfHeader.split(",")[0].trim();
-    }
+  private boolean isRateLimitedPath(String path) {
+    return path.startsWith("/api/aegis/v1/auth/login")
+        || path.startsWith("/api/aegis/v1/auth/register")
+        || path.startsWith("/api/aegis/v1/auth/refresh")
+        || path.startsWith("/api/aegis/v1/auth/link-account");
+  }
 
-    private static class RateLimitBucket {
-        final long startTime;
-        final AtomicInteger count;
-
-        RateLimitBucket(long startTime, AtomicInteger count) {
-            this.startTime = startTime;
-            this.count = count;
-        }
+  private String extractClientIp(HttpServletRequest request) {
+    String xfHeader = request.getHeader("X-Forwarded-For");
+    if (xfHeader == null || xfHeader.isBlank()) {
+      return request.getRemoteAddr();
     }
+    return xfHeader.split(",")[0].trim();
+  }
+
+  private static class RateLimitBucket {
+    final long startTime;
+    final AtomicInteger count;
+
+    RateLimitBucket(long startTime, AtomicInteger count) {
+      this.startTime = startTime;
+      this.count = count;
+    }
+  }
 }

@@ -11,29 +11,29 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class RoleRepositoryAdapter implements RoleRepository {
 
-    private final RoleJpaRepository repository;
+  private final RoleJpaRepository repository;
 
-    public RoleRepositoryAdapter(RoleJpaRepository repository) {
-        this.repository = repository;
-    }
+  public RoleRepositoryAdapter(RoleJpaRepository repository) {
+    this.repository = repository;
+  }
 
-    @Override
-    public Optional<Role> findById(UUID id) {
-        return repository.findById(id);
-    }
+  @Override
+  public Optional<Role> findById(UUID id) {
+    return repository.findById(id);
+  }
 
-    @Override
-    public Optional<Role> findByName(String name) {
-        return repository.findByName(name);
-    }
+  @Override
+  public Optional<Role> findByName(String name) {
+    return repository.findByName(name);
+  }
 
-    @Override
-    public List<Role> findAll() {
-        return repository.findAll();
-    }
+  @Override
+  public List<Role> findAll() {
+    return repository.findAll();
+  }
 
-    @Override
-    public Role save(Role role) {
-        return repository.save(role);
-    }
+  @Override
+  public Role save(Role role) {
+    return repository.save(role);
+  }
 }

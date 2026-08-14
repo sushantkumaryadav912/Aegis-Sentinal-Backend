@@ -26,76 +26,75 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AuthenticateUserServiceUnitTest {
 
-    @Mock
-    private UserRepository userRepository;
+  @Mock private UserRepository userRepository;
 
-    @Mock
-    private PasswordHasher passwordHasher;
+  @Mock private PasswordHasher passwordHasher;
 
-    @Mock
-    private CreateSessionService createSessionService;
+  @Mock private CreateSessionService createSessionService;
 
-    @Mock
-    private SecurityAuditLogger auditLogger;
+  @Mock private SecurityAuditLogger auditLogger;
 
-    private AuthenticateUserService service;
-    private User testUser;
+  private AuthenticateUserService service;
+  private User testUser;
 
-    @BeforeEach
-    void setUp() {
-        service = new AuthenticateUserService(userRepository, passwordHasher, createSessionService, auditLogger);
-        Organization org = Organization.create("Test Org", "test-org");
-        testUser = User.create(org, "user@aegis.test", "hashed_pwd", "Test", "User");
-    }
+  @BeforeEach
+  void setUp() {
+    service =
+        new AuthenticateUserService(
+            userRepository, passwordHasher, createSessionService, auditLogger);
+    Organization org = Organization.create("Test Org", "test-org");
+    testUser = User.create(org, "user@aegis.test", "hashed_pwd", "Test", "User");
+  }
 
-    @Test
-    @DisplayName("Service Unit Test: Successful password authentication issues tokens and logs audit event")
-    void testExecute_success() {
-        LoginUserCommand cmd = new LoginUserCommand("user@aegis.test", "Password123!");
-        when(userRepository.findByEmail("user@aegis.test")).thenReturn(Optional.of(testUser));
-        when(passwordHasher.matches("Password123!", "hashed_pwd")).thenReturn(true);
-        when(createSessionService.issueTokensAndCreateSession(testUser))
-                .thenReturn(new AuthenticationResult("access_token", "refresh_token"));
+  @Test
+  @DisplayName(
+      "Service Unit Test: Successful password authentication issues tokens and logs audit event")
+  void testExecute_success() {
+    LoginUserCommand cmd = new LoginUserCommand("user@aegis.test", "Password123!");
+    when(userRepository.findByEmail("user@aegis.test")).thenReturn(Optional.of(testUser));
+    when(passwordHasher.matches("Password123!", "hashed_pwd")).thenReturn(true);
+    when(createSessionService.issueTokensAndCreateSession(testUser))
+        .thenReturn(new AuthenticationResult("access_token", "refresh_token"));
 
-        AuthenticationResult result = service.execute(cmd);
+    AuthenticationResult result = service.execute(cmd);
 
-        assertThat(result.accessToken()).isEqualTo("access_token");
-        assertThat(result.refreshToken()).isEqualTo("refresh_token");
-        verify(auditLogger).logEvent(any());
-    }
+    assertThat(result.accessToken()).isEqualTo("access_token");
+    assertThat(result.refreshToken()).isEqualTo("refresh_token");
+    verify(auditLogger).logEvent(any());
+  }
 
-    @Test
-    @DisplayName("Service Unit Test: Unknown email throws IllegalArgumentException")
-    void testExecute_unknownEmail_throws() {
-        LoginUserCommand cmd = new LoginUserCommand("unknown@aegis.test", "Password123!");
-        when(userRepository.findByEmail("unknown@aegis.test")).thenReturn(Optional.empty());
+  @Test
+  @DisplayName("Service Unit Test: Unknown email throws IllegalArgumentException")
+  void testExecute_unknownEmail_throws() {
+    LoginUserCommand cmd = new LoginUserCommand("unknown@aegis.test", "Password123!");
+    when(userRepository.findByEmail("unknown@aegis.test")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.execute(cmd))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Invalid email or password");
-    }
+    assertThatThrownBy(() -> service.execute(cmd))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Invalid email or password");
+  }
 
-    @Test
-    @DisplayName("Service Unit Test: Inactive user throws IllegalStateException")
-    void testExecute_inactiveUser_throws() {
-        testUser.setIsActive(false);
-        LoginUserCommand cmd = new LoginUserCommand("user@aegis.test", "Password123!");
-        when(userRepository.findByEmail("user@aegis.test")).thenReturn(Optional.of(testUser));
+  @Test
+  @DisplayName("Service Unit Test: Inactive user throws IllegalStateException")
+  void testExecute_inactiveUser_throws() {
+    testUser.setIsActive(false);
+    LoginUserCommand cmd = new LoginUserCommand("user@aegis.test", "Password123!");
+    when(userRepository.findByEmail("user@aegis.test")).thenReturn(Optional.of(testUser));
 
-        assertThatThrownBy(() -> service.execute(cmd))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("inactive");
-    }
+    assertThatThrownBy(() -> service.execute(cmd))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("inactive");
+  }
 
-    @Test
-    @DisplayName("Service Unit Test: Wrong password throws IllegalArgumentException")
-    void testExecute_wrongPassword_throws() {
-        LoginUserCommand cmd = new LoginUserCommand("user@aegis.test", "WrongPassword!");
-        when(userRepository.findByEmail("user@aegis.test")).thenReturn(Optional.of(testUser));
-        when(passwordHasher.matches("WrongPassword!", "hashed_pwd")).thenReturn(false);
+  @Test
+  @DisplayName("Service Unit Test: Wrong password throws IllegalArgumentException")
+  void testExecute_wrongPassword_throws() {
+    LoginUserCommand cmd = new LoginUserCommand("user@aegis.test", "WrongPassword!");
+    when(userRepository.findByEmail("user@aegis.test")).thenReturn(Optional.of(testUser));
+    when(passwordHasher.matches("WrongPassword!", "hashed_pwd")).thenReturn(false);
 
-        assertThatThrownBy(() -> service.execute(cmd))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Invalid email or password");
-    }
+    assertThatThrownBy(() -> service.execute(cmd))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Invalid email or password");
+  }
 }

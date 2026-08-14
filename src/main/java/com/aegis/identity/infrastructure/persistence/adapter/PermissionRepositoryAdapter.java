@@ -11,29 +11,29 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class PermissionRepositoryAdapter implements PermissionRepository {
 
-    private final PermissionJpaRepository repository;
+  private final PermissionJpaRepository repository;
 
-    public PermissionRepositoryAdapter(PermissionJpaRepository repository) {
-        this.repository = repository;
-    }
+  public PermissionRepositoryAdapter(PermissionJpaRepository repository) {
+    this.repository = repository;
+  }
 
-    @Override
-    public Optional<Permission> findById(UUID id) {
-        return repository.findById(id);
-    }
+  @Override
+  public Optional<Permission> findById(UUID id) {
+    return repository.findById(id);
+  }
 
-    @Override
-    public Optional<Permission> findByName(String name) {
-        return repository.findByName(name);
-    }
+  @Override
+  public Optional<Permission> findByName(String name) {
+    return repository.findByName(name);
+  }
 
-    @Override
-    public List<Permission> findAll() {
-        return repository.findAll();
-    }
+  @Override
+  public List<Permission> findAll() {
+    return repository.findAll();
+  }
 
-    @Override
-    public Permission save(Permission permission) {
-        return repository.save(permission);
-    }
+  @Override
+  public Permission save(Permission permission) {
+    return repository.save(permission);
+  }
 }

@@ -28,55 +28,60 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Builder
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "organization_id", nullable = false)
-    private Organization organization;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "organization_id", nullable = false)
+  private Organization organization;
 
-    @Column(nullable = false, unique = true)
-    private String email;
+  @Column(nullable = false, unique = true)
+  private String email;
 
-    @Column(name = "password_hash")
-    private String passwordHash;
+  @Column(name = "password_hash")
+  private String passwordHash;
 
-    @Column(name = "first_name", nullable = false, length = 100)
-    private String firstName;
+  @Column(name = "first_name", nullable = false, length = 100)
+  private String firstName;
 
-    @Column(name = "last_name", nullable = false, length = 100)
-    private String lastName;
+  @Column(name = "last_name", nullable = false, length = 100)
+  private String lastName;
 
-    @Builder.Default
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
+  @Builder.Default
+  @Column(name = "is_active", nullable = false)
+  private Boolean isActive = true;
 
-    @Builder.Default
-    @Column(name = "is_mfa_enabled", nullable = false)
-    private Boolean isMfaEnabled = false;
+  @Builder.Default
+  @Column(name = "is_mfa_enabled", nullable = false)
+  private Boolean isMfaEnabled = false;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+  @CreationTimestamp
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private Instant createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
+  @UpdateTimestamp
+  @Column(name = "updated_at", nullable = false)
+  private Instant updatedAt;
 
-    public boolean isActive() {
-        return Boolean.TRUE.equals(isActive);
-    }
+  public boolean isActive() {
+    return Boolean.TRUE.equals(isActive);
+  }
 
-    public static User create(Organization organization, String email, String passwordHash, String firstName, String lastName) {
-        return User.builder()
-            .organization(organization)
-            .email(email)
-            .passwordHash(passwordHash)
-            .firstName(firstName)
-            .lastName(lastName)
-            .isActive(true)
-            .isMfaEnabled(false)
-            .build();
-    }
+  public static User create(
+      Organization organization,
+      String email,
+      String passwordHash,
+      String firstName,
+      String lastName) {
+    return User.builder()
+        .organization(organization)
+        .email(email)
+        .passwordHash(passwordHash)
+        .firstName(firstName)
+        .lastName(lastName)
+        .isActive(true)
+        .isMfaEnabled(false)
+        .build();
+  }
 }

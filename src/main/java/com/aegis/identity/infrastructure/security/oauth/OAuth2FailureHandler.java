@@ -16,23 +16,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class OAuth2FailureHandler implements AuthenticationFailureHandler {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Override
-    public void onAuthenticationFailure(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            AuthenticationException exception) throws IOException, ServletException {
+  @Override
+  public void onAuthenticationFailure(
+      HttpServletRequest request, HttpServletResponse response, AuthenticationException exception)
+      throws IOException, ServletException {
 
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        Map<String, Object> body = Map.of(
-                "error", "OAuth Authentication Failed",
-                "message", "External OAuth authentication failed or was cancelled.",
-                "timestamp", Instant.now().toString()
-        );
+    Map<String, Object> body =
+        Map.of(
+            "error", "OAuth Authentication Failed",
+            "message", "External OAuth authentication failed or was cancelled.",
+            "timestamp", Instant.now().toString());
 
-        objectMapper.writeValue(response.getWriter(), body);
-    }
+    objectMapper.writeValue(response.getWriter(), body);
+  }
 }

@@ -16,34 +16,38 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class UserRepositorySliceTest {
 
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired private UserRepository userRepository;
 
-    @Autowired
-    private OrganizationRepository organizationRepository;
+  @Autowired private OrganizationRepository organizationRepository;
 
-    @Test
-    @DisplayName("Repository Test: findByEmail returns saved user entity")
-    void testFindByEmail_returnsUser() {
-        Organization org = organizationRepository.save(Organization.create("Repo Org " + UUID.randomUUID(), "repo-org-" + UUID.randomUUID()));
-        String email = "repo-user-" + UUID.randomUUID() + "@aegis.test";
-        User user = userRepository.save(User.create(org, email, "hash", "Repo", "User"));
+  @Test
+  @DisplayName("Repository Test: findByEmail returns saved user entity")
+  void testFindByEmail_returnsUser() {
+    Organization org =
+        organizationRepository.save(
+            Organization.create("Repo Org " + UUID.randomUUID(), "repo-org-" + UUID.randomUUID()));
+    String email = "repo-user-" + UUID.randomUUID() + "@aegis.test";
+    User user = userRepository.save(User.create(org, email, "hash", "Repo", "User"));
 
-        Optional<User> found = userRepository.findByEmail(email);
+    Optional<User> found = userRepository.findByEmail(email);
 
-        assertThat(found).isPresent();
-        assertThat(found.get().getId()).isEqualTo(user.getId());
-        assertThat(found.get().getEmail()).isEqualTo(email);
-    }
+    assertThat(found).isPresent();
+    assertThat(found.get().getId()).isEqualTo(user.getId());
+    assertThat(found.get().getEmail()).isEqualTo(email);
+  }
 
-    @Test
-    @DisplayName("Repository Test: existsByEmail returns true for existing email and false for unknown email")
-    void testExistsByEmail() {
-        Organization org = organizationRepository.save(Organization.create("Repo Org " + UUID.randomUUID(), "repo-org-" + UUID.randomUUID()));
-        String email = "exists-" + UUID.randomUUID() + "@aegis.test";
-        userRepository.save(User.create(org, email, "hash", "Exists", "User"));
+  @Test
+  @DisplayName(
+      "Repository Test: existsByEmail returns true for existing email and false for unknown email")
+  void testExistsByEmail() {
+    Organization org =
+        organizationRepository.save(
+            Organization.create("Repo Org " + UUID.randomUUID(), "repo-org-" + UUID.randomUUID()));
+    String email = "exists-" + UUID.randomUUID() + "@aegis.test";
+    userRepository.save(User.create(org, email, "hash", "Exists", "User"));
 
-        assertThat(userRepository.existsByEmail(email)).isTrue();
-        assertThat(userRepository.existsByEmail("nonexistent-" + UUID.randomUUID() + "@aegis.test")).isFalse();
-    }
+    assertThat(userRepository.existsByEmail(email)).isTrue();
+    assertThat(userRepository.existsByEmail("nonexistent-" + UUID.randomUUID() + "@aegis.test"))
+        .isFalse();
+  }
 }

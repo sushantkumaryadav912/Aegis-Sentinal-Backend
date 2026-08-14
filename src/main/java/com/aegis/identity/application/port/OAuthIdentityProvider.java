@@ -4,9 +4,9 @@ import com.aegis.identity.domain.model.IdentityProvider;
 
 public interface OAuthIdentityProvider {
 
-    IdentityProvider provider();
+  IdentityProvider provider();
 
-    boolean supports(Object principal);
+  boolean supports(Object principal);
 
-    OAuthUserInfo extractUserInfo(Object principal);
+  OAuthUserInfo extractUserInfo(Object principal);
 }

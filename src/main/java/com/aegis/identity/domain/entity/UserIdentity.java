@@ -22,108 +22,95 @@ import java.util.UUID;
 
 @Entity
 @Table(
-        name = "user_identities",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_user_identity_provider_subject",
-                        columnNames = {"provider", "provider_subject"}
-                )
-        },
-        indexes = {
-                @Index(
-                        name = "idx_user_identities_user",
-                        columnList = "user_id"
-                ),
-                @Index(
-                        name = "idx_user_identities_provider_email",
-                        columnList = "provider, provider_email"
-                )
-        }
-)
+    name = "user_identities",
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "uk_user_identity_provider_subject",
+          columnNames = {"provider", "provider_subject"})
+    },
+    indexes = {
+      @Index(name = "idx_user_identities_user", columnList = "user_id"),
+      @Index(name = "idx_user_identities_provider_email", columnList = "provider, provider_email")
+    })
 public class UserIdentity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-            name = "user_id",
-            nullable = false,
-            foreignKey = @ForeignKey(name = "fk_user_identity_user")
-    )
-    private User user;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(
+      name = "user_id",
+      nullable = false,
+      foreignKey = @ForeignKey(name = "fk_user_identity_user"))
+  private User user;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "provider", nullable = false, length = 50)
-    private IdentityProvider provider;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "provider", nullable = false, length = 50)
+  private IdentityProvider provider;
 
-    @Column(name = "provider_subject", nullable = false, length = 255)
-    private String providerSubject;
+  @Column(name = "provider_subject", nullable = false, length = 255)
+  private String providerSubject;
 
-    @Column(name = "provider_email", length = 255)
-    private String providerEmail;
+  @Column(name = "provider_email", length = 255)
+  private String providerEmail;
 
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+  @Column(name = "created_at", nullable = false)
+  private Instant createdAt;
 
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
+  @Column(name = "updated_at", nullable = false)
+  private Instant updatedAt;
 
-    protected UserIdentity() {
-    }
+  protected UserIdentity() {}
 
-    public UserIdentity(
-            User user,
-            IdentityProvider provider,
-            String providerSubject,
-            String providerEmail) {
+  public UserIdentity(
+      User user, IdentityProvider provider, String providerSubject, String providerEmail) {
 
-        this.user = user;
-        this.provider = provider;
-        this.providerSubject = providerSubject;
-        this.providerEmail = providerEmail;
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-    }
+    this.user = user;
+    this.provider = provider;
+    this.providerSubject = providerSubject;
+    this.providerEmail = providerEmail;
+    this.createdAt = Instant.now();
+    this.updatedAt = Instant.now();
+  }
 
-    @PrePersist
-    protected void onCreate() {
-        Instant now = Instant.now();
-        createdAt = now;
-        updatedAt = now;
-    }
+  @PrePersist
+  protected void onCreate() {
+    Instant now = Instant.now();
+    createdAt = now;
+    updatedAt = now;
+  }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
-    }
+  @PreUpdate
+  protected void onUpdate() {
+    updatedAt = Instant.now();
+  }
 
-    public UUID getId() {
-        return id;
-    }
+  public UUID getId() {
+    return id;
+  }
 
-    public User getUser() {
-        return user;
-    }
+  public User getUser() {
+    return user;
+  }
 
-    public IdentityProvider getProvider() {
-        return provider;
-    }
+  public IdentityProvider getProvider() {
+    return provider;
+  }
 
-    public String getProviderSubject() {
-        return providerSubject;
-    }
+  public String getProviderSubject() {
+    return providerSubject;
+  }
 
-    public String getProviderEmail() {
-        return providerEmail;
-    }
+  public String getProviderEmail() {
+    return providerEmail;
+  }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
 
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
+  public Instant getUpdatedAt() {
+    return updatedAt;
+  }
 }

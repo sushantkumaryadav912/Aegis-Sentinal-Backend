@@ -1,6 +1,3 @@
 package com.aegis.identity.application.command;
 
-public record RefreshTokenCommand(
-        String refreshToken
-) {
-}
+public record RefreshTokenCommand(String refreshToken) {}

@@ -19,77 +19,76 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class GetCurrentUserService {
 
-    private final UserRepository userRepository;
-    private final UserRoleRepository userRoleRepository;
-    private final WorkspaceRepository workspaceRepository;
+  private final UserRepository userRepository;
+  private final UserRoleRepository userRoleRepository;
+  private final WorkspaceRepository workspaceRepository;
 
-    public GetCurrentUserService(
-            UserRepository userRepository,
-            UserRoleRepository userRoleRepository,
-            WorkspaceRepository workspaceRepository) {
+  public GetCurrentUserService(
+      UserRepository userRepository,
+      UserRoleRepository userRoleRepository,
+      WorkspaceRepository workspaceRepository) {
 
-        this.userRepository = userRepository;
-        this.userRoleRepository = userRoleRepository;
-        this.workspaceRepository = workspaceRepository;
+    this.userRepository = userRepository;
+    this.userRoleRepository = userRoleRepository;
+    this.workspaceRepository = workspaceRepository;
+  }
+
+  @Transactional(readOnly = true)
+  public UserContext execute(UUID userId) {
+
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+    if (!user.isActive()) {
+      throw new IllegalStateException("User account is inactive");
     }
 
-    @Transactional(readOnly = true)
-    public UserContext execute(UUID userId) {
+    List<UserRole> userRoles = userRoleRepository.findByUserId(userId);
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    List<String> roles =
+        userRoles.stream()
+            .map(ur -> ur.getRole() != null ? ur.getRole().getName() : null)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
 
-        if (!user.isActive()) {
-            throw new IllegalStateException("User account is inactive");
-        }
+    Set<String> permissions =
+        userRoles.stream()
+            .map(ur -> ur.getRole())
+            .filter(Objects::nonNull)
+            .flatMap(role -> role.getPermissions().stream())
+            .map(perm -> perm.getName())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
 
-        List<UserRole> userRoles = userRoleRepository.findByUserId(userId);
+    Organization organization = user.getOrganization();
+    if (organization != null) {
+      organization.getName();
+      organization.getSlug();
+    }
 
-        List<String> roles = userRoles.stream()
-                .map(ur -> ur.getRole() != null ? ur.getRole().getName() : null)
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
-
-        Set<String> permissions = userRoles.stream()
-                .map(ur -> ur.getRole())
-                .filter(Objects::nonNull)
-                .flatMap(role -> role.getPermissions().stream())
-                .map(perm -> perm.getName())
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-
-        Organization organization = user.getOrganization();
-        if (organization != null) {
-            organization.getName();
-            organization.getSlug();
-        }
-
-        Workspace workspace = userRoles.stream()
-                .map(ur -> ur.getWorkspace())
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElseGet(() -> {
-                    if (organization != null) {
-                        return workspaceRepository.findByOrganizationId(organization.getId())
-                                .stream()
-                                .findFirst()
-                                .orElse(null);
-                    }
-                    return null;
+    Workspace workspace =
+        userRoles.stream()
+            .map(ur -> ur.getWorkspace())
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElseGet(
+                () -> {
+                  if (organization != null) {
+                    return workspaceRepository.findByOrganizationId(organization.getId()).stream()
+                        .findFirst()
+                        .orElse(null);
+                  }
+                  return null;
                 });
 
-        if (workspace != null) {
-            workspace.getName();
-            workspace.getSlug();
-        }
-
-        return new UserContext(
-                user,
-                organization,
-                workspace,
-                roles,
-                permissions
-        );
+    if (workspace != null) {
+      workspace.getName();
+      workspace.getSlug();
     }
+
+    return new UserContext(user, organization, workspace, roles, permissions);
+  }
 }

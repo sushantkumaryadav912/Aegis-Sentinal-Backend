@@ -27,36 +27,37 @@ import org.hibernate.annotations.CreationTimestamp;
 @Builder
 public class UserRole {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "role_id", nullable = false)
-    private Role role;
+  @ManyToOne(fetch = FetchType.EAGER, optional = false)
+  @JoinColumn(name = "role_id", nullable = false)
+  private Role role;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "organization_id", nullable = false)
-    private Organization organization;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "organization_id", nullable = false)
+  private Organization organization;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "workspace_id")
-    private Workspace workspace;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "workspace_id")
+  private Workspace workspace;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+  @CreationTimestamp
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private Instant createdAt;
 
-    public static UserRole create(User user, Role role, Organization organization, Workspace workspace) {
-        return UserRole.builder()
-                .user(user)
-                .role(role)
-                .organization(organization)
-                .workspace(workspace)
-                .build();
-    }
+  public static UserRole create(
+      User user, Role role, Organization organization, Workspace workspace) {
+    return UserRole.builder()
+        .user(user)
+        .role(role)
+        .organization(organization)
+        .workspace(workspace)
+        .build();
+  }
 }

@@ -42,3 +42,13 @@ info:
     name: Aegis Sentinel Backend
     version: 0.1.0-SNAPSHOT
     description: Enterprise Cloud Incident Detection and Response Platform
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: alpha
+    tags-sorter: alpha
+

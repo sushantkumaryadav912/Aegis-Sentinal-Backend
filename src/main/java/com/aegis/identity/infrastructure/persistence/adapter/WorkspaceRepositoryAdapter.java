@@ -11,34 +11,34 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class WorkspaceRepositoryAdapter implements WorkspaceRepository {
 
-    private final WorkspaceJpaRepository repository;
+  private final WorkspaceJpaRepository repository;
 
-    public WorkspaceRepositoryAdapter(WorkspaceJpaRepository repository) {
-        this.repository = repository;
-    }
+  public WorkspaceRepositoryAdapter(WorkspaceJpaRepository repository) {
+    this.repository = repository;
+  }
 
-    @Override
-    public Optional<Workspace> findById(UUID id) {
-        return repository.findById(id);
-    }
+  @Override
+  public Optional<Workspace> findById(UUID id) {
+    return repository.findById(id);
+  }
 
-    @Override
-    public List<Workspace> findByOrganizationId(UUID organizationId) {
-        return repository.findByOrganizationId(organizationId);
-    }
+  @Override
+  public List<Workspace> findByOrganizationId(UUID organizationId) {
+    return repository.findByOrganizationId(organizationId);
+  }
 
-    @Override
-    public Optional<Workspace> findByOrganizationIdAndSlug(UUID organizationId, String slug) {
-        return repository.findByOrganizationIdAndSlug(organizationId, slug);
-    }
+  @Override
+  public Optional<Workspace> findByOrganizationIdAndSlug(UUID organizationId, String slug) {
+    return repository.findByOrganizationIdAndSlug(organizationId, slug);
+  }
 
-    @Override
-    public boolean existsByOrganizationIdAndSlug(UUID organizationId, String slug) {
-        return repository.existsByOrganizationIdAndSlug(organizationId, slug);
-    }
+  @Override
+  public boolean existsByOrganizationIdAndSlug(UUID organizationId, String slug) {
+    return repository.existsByOrganizationIdAndSlug(organizationId, slug);
+  }
 
-    @Override
-    public Workspace save(Workspace workspace) {
-        return repository.save(workspace);
-    }
+  @Override
+  public Workspace save(Workspace workspace) {
+    return repository.save(workspace);
+  }
 }

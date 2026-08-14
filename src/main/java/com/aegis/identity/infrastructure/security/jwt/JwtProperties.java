@@ -5,8 +5,4 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "aegis.security.jwt")
 public record JwtProperties(
-        String issuer,
-        String secret,
-        Duration accessTokenTtl,
-        Duration refreshTokenTtl
-) {}
+    String issuer, String secret, Duration accessTokenTtl, Duration refreshTokenTtl) {}

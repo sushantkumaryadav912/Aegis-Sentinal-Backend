@@ -7,11 +7,11 @@ import java.util.UUID;
 
 public interface PermissionRepository {
 
-    Optional<Permission> findById(UUID id);
+  Optional<Permission> findById(UUID id);
 
-    Optional<Permission> findByName(String name);
+  Optional<Permission> findByName(String name);
 
-    List<Permission> findAll();
+  List<Permission> findAll();
 
-    Permission save(Permission permission);
+  Permission save(Permission permission);
 }

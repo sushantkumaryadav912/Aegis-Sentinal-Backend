@@ -16,51 +16,51 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthenticateOAuthUserService {
 
-    private final OAuthIdentityProviderRegistry identityProviderRegistry;
-    private final UserIdentityRepository userIdentityRepository;
-    private final UserRepository userRepository;
-    private final OAuthOnboardingService oAuthOnboardingService;
-    private final CreateSessionService createSessionService;
+  private final OAuthIdentityProviderRegistry identityProviderRegistry;
+  private final UserIdentityRepository userIdentityRepository;
+  private final UserRepository userRepository;
+  private final OAuthOnboardingService oAuthOnboardingService;
+  private final CreateSessionService createSessionService;
 
-    public AuthenticateOAuthUserService(
-            OAuthIdentityProviderRegistry identityProviderRegistry,
-            UserIdentityRepository userIdentityRepository,
-            UserRepository userRepository,
-            OAuthOnboardingService oAuthOnboardingService,
-            CreateSessionService createSessionService) {
+  public AuthenticateOAuthUserService(
+      OAuthIdentityProviderRegistry identityProviderRegistry,
+      UserIdentityRepository userIdentityRepository,
+      UserRepository userRepository,
+      OAuthOnboardingService oAuthOnboardingService,
+      CreateSessionService createSessionService) {
 
-        this.identityProviderRegistry = identityProviderRegistry;
-        this.userIdentityRepository = userIdentityRepository;
-        this.userRepository = userRepository;
-        this.oAuthOnboardingService = oAuthOnboardingService;
-        this.createSessionService = createSessionService;
+    this.identityProviderRegistry = identityProviderRegistry;
+    this.userIdentityRepository = userIdentityRepository;
+    this.userRepository = userRepository;
+    this.oAuthOnboardingService = oAuthOnboardingService;
+    this.createSessionService = createSessionService;
+  }
+
+  @Transactional
+  public OAuthAuthenticationResult execute(Object principal) {
+    OAuthIdentityProvider provider = identityProviderRegistry.resolve(principal);
+    OAuthUserInfo userInfo = provider.extractUserInfo(principal);
+
+    Optional<UserIdentity> existingIdentity =
+        userIdentityRepository.findByProviderAndProviderSubject(
+            userInfo.provider(), userInfo.providerSubject());
+
+    if (existingIdentity.isPresent()) {
+      User user = existingIdentity.get().getUser();
+      if (!user.isActive()) {
+        throw new IllegalStateException("User account is inactive");
+      }
+
+      return OAuthAuthenticationResult.success(
+          createSessionService.issueTokensAndCreateSession(user));
     }
 
-    @Transactional
-    public OAuthAuthenticationResult execute(Object principal) {
-        OAuthIdentityProvider provider = identityProviderRegistry.resolve(principal);
-        OAuthUserInfo userInfo = provider.extractUserInfo(principal);
-
-        Optional<UserIdentity> existingIdentity = userIdentityRepository.findByProviderAndProviderSubject(
-                userInfo.provider(),
-                userInfo.providerSubject()
-        );
-
-        if (existingIdentity.isPresent()) {
-            User user = existingIdentity.get().getUser();
-            if (!user.isActive()) {
-                throw new IllegalStateException("User account is inactive");
-            }
-
-            return OAuthAuthenticationResult.success(createSessionService.issueTokensAndCreateSession(user));
-        }
-
-        Optional<User> existingUserByEmail = userRepository.findByEmail(userInfo.email());
-        if (existingUserByEmail.isPresent()) {
-            return OAuthAuthenticationResult.linkingRequired(userInfo);
-        }
-
-        AuthenticationResult onboardingResult = oAuthOnboardingService.execute(userInfo);
-        return OAuthAuthenticationResult.success(onboardingResult);
+    Optional<User> existingUserByEmail = userRepository.findByEmail(userInfo.email());
+    if (existingUserByEmail.isPresent()) {
+      return OAuthAuthenticationResult.linkingRequired(userInfo);
     }
+
+    AuthenticationResult onboardingResult = oAuthOnboardingService.execute(userInfo);
+    return OAuthAuthenticationResult.success(onboardingResult);
+  }
 }

@@ -17,49 +17,50 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-public class DatabaseGrantedAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
+public class DatabaseGrantedAuthoritiesConverter
+    implements Converter<Jwt, Collection<GrantedAuthority>> {
 
-    private final UserRoleRepository userRoleRepository;
+  private final UserRoleRepository userRoleRepository;
 
-    public DatabaseGrantedAuthoritiesConverter(UserRoleRepository userRoleRepository) {
-        this.userRoleRepository = userRoleRepository;
+  public DatabaseGrantedAuthoritiesConverter(UserRoleRepository userRoleRepository) {
+    this.userRoleRepository = userRoleRepository;
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Collection<GrantedAuthority> convert(Jwt jwt) {
+
+    String tokenType = jwt.getClaimAsString("token_type");
+    if (!"access".equals(tokenType)) {
+      return Set.of();
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public Collection<GrantedAuthority> convert(Jwt jwt) {
+    UUID userId;
 
-        String tokenType = jwt.getClaimAsString("token_type");
-        if (!"access".equals(tokenType)) {
-            return Set.of();
-        }
-
-        UUID userId;
-
-        try {
-            userId = UUID.fromString(jwt.getSubject());
-        } catch (IllegalArgumentException exception) {
-            return Set.of();
-        }
-
-        Collection<UserRole> userRoles = userRoleRepository.findByUserId(userId);
-
-        Set<GrantedAuthority> authorities = new HashSet<>();
-
-        for (UserRole userRole : userRoles) {
-            Role role = userRole.getRole();
-
-            if (role != null) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
-
-                if (role.getPermissions() != null) {
-                    for (Permission permission : role.getPermissions()) {
-                        authorities.add(new SimpleGrantedAuthority(permission.getName()));
-                    }
-                }
-            }
-        }
-
-        return new ArrayList<>(authorities);
+    try {
+      userId = UUID.fromString(jwt.getSubject());
+    } catch (IllegalArgumentException exception) {
+      return Set.of();
     }
+
+    Collection<UserRole> userRoles = userRoleRepository.findByUserId(userId);
+
+    Set<GrantedAuthority> authorities = new HashSet<>();
+
+    for (UserRole userRole : userRoles) {
+      Role role = userRole.getRole();
+
+      if (role != null) {
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
+
+        if (role.getPermissions() != null) {
+          for (Permission permission : role.getPermissions()) {
+            authorities.add(new SimpleGrantedAuthority(permission.getName()));
+          }
+        }
+      }
+    }
+
+    return new ArrayList<>(authorities);
+  }
 }

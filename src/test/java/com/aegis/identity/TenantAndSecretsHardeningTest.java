@@ -22,68 +22,73 @@ import org.springframework.web.context.WebApplicationContext;
 @SpringBootTest
 class TenantAndSecretsHardeningTest {
 
-    @Autowired
-    private WebApplicationContext context;
+  @Autowired private WebApplicationContext context;
 
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired private UserRepository userRepository;
 
-    @Autowired
-    private TokenService tokenService;
+  @Autowired private TokenService tokenService;
 
-    private MockMvc mockMvc;
+  private MockMvc mockMvc;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .apply(springSecurity())
-                .build();
-    }
+  @BeforeEach
+  void setUp() {
+    mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+  }
 
-    @Test
-    @DisplayName("5.9 Tenant Isolation: TenantContext ThreadLocal must be completely cleared after HTTP request completion")
-    void testTenantResolverFilter_clearsThreadLocalContext() throws Exception {
-        User user = userRepository.findByEmail("admin@aegis-demo.local").orElseThrow();
-        String accessToken = tokenService.generateAccessToken(user);
+  @Test
+  @DisplayName(
+      "5.9 Tenant Isolation: TenantContext ThreadLocal must be completely cleared after HTTP request completion")
+  void testTenantResolverFilter_clearsThreadLocalContext() throws Exception {
+    User user = userRepository.findByEmail("admin@aegis-demo.local").orElseThrow();
+    String accessToken = tokenService.generateAccessToken(user);
 
-        mockMvc.perform(get("/api/aegis/v1/auth/me")
-                        .header("Authorization", "Bearer " + accessToken)
-                        .header("X-Organization-Id", user.getOrganization().getId().toString()))
-                .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            get("/api/aegis/v1/auth/me")
+                .header("Authorization", "Bearer " + accessToken)
+                .header("X-Organization-Id", user.getOrganization().getId().toString()))
+        .andExpect(status().isOk());
 
-        // Assert ThreadLocal is cleared after request
-        assertThat(TenantContext.get()).isNull();
-    }
+    // Assert ThreadLocal is cleared after request
+    assertThat(TenantContext.get()).isNull();
+  }
 
-    @Test
-    @DisplayName("5.9 Tenant Isolation: TenantResolverFilter resolves both X-Aegis-Organization-Id and X-Organization-Id headers")
-    void testTenantResolverFilter_resolvesFallbackHeaderNames() throws Exception {
-        User user = userRepository.findByEmail("admin@aegis-demo.local").orElseThrow();
-        String accessToken = tokenService.generateAccessToken(user);
-        UUID orgId = user.getOrganization().getId();
+  @Test
+  @DisplayName(
+      "5.9 Tenant Isolation: TenantResolverFilter resolves both X-Aegis-Organization-Id and X-Organization-Id headers")
+  void testTenantResolverFilter_resolvesFallbackHeaderNames() throws Exception {
+    User user = userRepository.findByEmail("admin@aegis-demo.local").orElseThrow();
+    String accessToken = tokenService.generateAccessToken(user);
+    UUID orgId = user.getOrganization().getId();
 
-        mockMvc.perform(get("/api/aegis/v1/auth/me")
-                        .header("Authorization", "Bearer " + accessToken)
-                        .header("X-Organization-Id", orgId.toString()))
-                .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            get("/api/aegis/v1/auth/me")
+                .header("Authorization", "Bearer " + accessToken)
+                .header("X-Organization-Id", orgId.toString()))
+        .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/aegis/v1/auth/me")
-                        .header("Authorization", "Bearer " + accessToken)
-                        .header("X-Aegis-Organization-Id", orgId.toString()))
-                .andExpect(status().isOk());
-    }
+    mockMvc
+        .perform(
+            get("/api/aegis/v1/auth/me")
+                .header("Authorization", "Bearer " + accessToken)
+                .header("X-Aegis-Organization-Id", orgId.toString()))
+        .andExpect(status().isOk());
+  }
 
-    @Test
-    @DisplayName("5.10 Secrets & Config: Application config must use environment variable placeholders for all client credentials and JWT secrets")
-    void testSecretsConfiguration_usesEnvironmentPlaceholders() {
-        String googleClientIdEnv = System.getenv("GOOGLE_CLIENT_ID");
-        String googleClientSecretEnv = System.getenv("GOOGLE_CLIENT_SECRET");
-        String jwtSecretEnv = System.getenv("AEGIS_JWT_SECRET");
+  @Test
+  @DisplayName(
+      "5.10 Secrets & Config: Application config must use environment variable placeholders for all client credentials and JWT secrets")
+  void testSecretsConfiguration_usesEnvironmentPlaceholders() {
+    String googleClientIdEnv = System.getenv("GOOGLE_CLIENT_ID");
+    String googleClientSecretEnv = System.getenv("GOOGLE_CLIENT_SECRET");
+    String jwtSecretEnv = System.getenv("AEGIS_JWT_SECRET");
 
-        // Environment variables or default local mock placeholders are used
-        assertThat(googleClientIdEnv == null || !googleClientIdEnv.contains("REAL_PROD_SECRET")).isTrue();
-        assertThat(googleClientSecretEnv == null || !googleClientSecretEnv.contains("REAL_PROD_SECRET")).isTrue();
-        assertThat(jwtSecretEnv == null || !jwtSecretEnv.contains("REAL_PROD_SECRET")).isTrue();
-    }
+    // Environment variables or default local mock placeholders are used
+    assertThat(googleClientIdEnv == null || !googleClientIdEnv.contains("REAL_PROD_SECRET"))
+        .isTrue();
+    assertThat(googleClientSecretEnv == null || !googleClientSecretEnv.contains("REAL_PROD_SECRET"))
+        .isTrue();
+    assertThat(jwtSecretEnv == null || !jwtSecretEnv.contains("REAL_PROD_SECRET")).isTrue();
+  }
 }

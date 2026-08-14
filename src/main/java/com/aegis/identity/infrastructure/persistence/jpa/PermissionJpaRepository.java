@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PermissionJpaRepository extends JpaRepository<Permission, UUID> {
 
-    Optional<Permission> findByName(String name);
+  Optional<Permission> findByName(String name);
 }

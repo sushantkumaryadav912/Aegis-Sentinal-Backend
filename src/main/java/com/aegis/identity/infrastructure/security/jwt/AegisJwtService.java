@@ -17,77 +17,71 @@ import org.springframework.stereotype.Service;
 @Service
 public class AegisJwtService implements TokenService {
 
-    private final JwtEncoder jwtEncoder;
-    private final JwtDecoder jwtDecoder;
-    private final JwtProperties properties;
+  private final JwtEncoder jwtEncoder;
+  private final JwtDecoder jwtDecoder;
+  private final JwtProperties properties;
 
-    public AegisJwtService(
-            JwtEncoder jwtEncoder,
-            JwtDecoder jwtDecoder,
-            JwtProperties properties) {
+  public AegisJwtService(JwtEncoder jwtEncoder, JwtDecoder jwtDecoder, JwtProperties properties) {
 
-        this.jwtEncoder = jwtEncoder;
-        this.jwtDecoder = jwtDecoder;
-        this.properties = properties;
+    this.jwtEncoder = jwtEncoder;
+    this.jwtDecoder = jwtDecoder;
+    this.properties = properties;
+  }
+
+  @Override
+  public String generateAccessToken(User user) {
+
+    Instant issuedAt = Instant.now();
+
+    JwtClaimsSet claims =
+        JwtClaimsSet.builder()
+            .issuer(properties.issuer())
+            .subject(user.getId().toString())
+            .issuedAt(issuedAt)
+            .expiresAt(issuedAt.plus(properties.accessTokenTtl()))
+            .claim("email", user.getEmail())
+            .claim("token_type", "access")
+            .build();
+
+    return encode(claims);
+  }
+
+  @Override
+  public String generateRefreshToken(User user) {
+
+    Instant issuedAt = Instant.now();
+
+    JwtClaimsSet claims =
+        JwtClaimsSet.builder()
+            .issuer(properties.issuer())
+            .subject(user.getId().toString())
+            .id(UUID.randomUUID().toString())
+            .issuedAt(issuedAt)
+            .expiresAt(issuedAt.plus(properties.refreshTokenTtl()))
+            .claim("token_type", "refresh")
+            .build();
+
+    return encode(claims);
+  }
+
+  @Override
+  public UUID extractUserIdFromRefreshToken(String refreshToken) {
+    try {
+      Jwt jwt = jwtDecoder.decode(refreshToken);
+      String tokenType = jwt.getClaimAsString("token_type");
+      if (!"refresh".equals(tokenType)) {
+        throw new IllegalArgumentException("Invalid token type: expected refresh token");
+      }
+      return UUID.fromString(jwt.getSubject());
+    } catch (JwtException | IllegalArgumentException ex) {
+      throw new IllegalArgumentException("Invalid or expired refresh token", ex);
     }
+  }
 
-    @Override
-    public String generateAccessToken(User user) {
+  private String encode(JwtClaimsSet claims) {
 
-        Instant issuedAt = Instant.now();
+    JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
 
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer(properties.issuer())
-                .subject(user.getId().toString())
-                .issuedAt(issuedAt)
-                .expiresAt(
-                        issuedAt.plus(properties.accessTokenTtl()))
-                .claim("email", user.getEmail())
-                .claim("token_type", "access")
-                .build();
-
-        return encode(claims);
-    }
-
-    @Override
-    public String generateRefreshToken(User user) {
-
-        Instant issuedAt = Instant.now();
-
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer(properties.issuer())
-                .subject(user.getId().toString())
-                .id(UUID.randomUUID().toString())
-                .issuedAt(issuedAt)
-                .expiresAt(
-                        issuedAt.plus(properties.refreshTokenTtl()))
-                .claim("token_type", "refresh")
-                .build();
-
-        return encode(claims);
-    }
-
-    @Override
-    public UUID extractUserIdFromRefreshToken(String refreshToken) {
-        try {
-            Jwt jwt = jwtDecoder.decode(refreshToken);
-            String tokenType = jwt.getClaimAsString("token_type");
-            if (!"refresh".equals(tokenType)) {
-                throw new IllegalArgumentException("Invalid token type: expected refresh token");
-            }
-            return UUID.fromString(jwt.getSubject());
-        } catch (JwtException | IllegalArgumentException ex) {
-            throw new IllegalArgumentException("Invalid or expired refresh token", ex);
-        }
-    }
-
-    private String encode(JwtClaimsSet claims) {
-
-        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256)
-                .build();
-
-        return jwtEncoder
-                .encode(JwtEncoderParameters.from(header, claims))
-                .getTokenValue();
-    }
+    return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
+  }
 }

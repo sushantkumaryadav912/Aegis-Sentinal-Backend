@@ -9,38 +9,29 @@ import java.util.UUID;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class UserIdentityRepositoryAdapter
-        implements UserIdentityRepository {
+public class UserIdentityRepositoryAdapter implements UserIdentityRepository {
 
-    private final UserIdentityJpaRepository repository;
+  private final UserIdentityJpaRepository repository;
 
-    public UserIdentityRepositoryAdapter(
-            UserIdentityJpaRepository repository) {
-        this.repository = repository;
-    }
+  public UserIdentityRepositoryAdapter(UserIdentityJpaRepository repository) {
+    this.repository = repository;
+  }
 
-    @Override
-    public Optional<UserIdentity> findByProviderAndProviderSubject(
-            IdentityProvider provider,
-            String providerSubject) {
+  @Override
+  public Optional<UserIdentity> findByProviderAndProviderSubject(
+      IdentityProvider provider, String providerSubject) {
 
-        return repository.findByProviderAndProviderSubject(
-                provider,
-                providerSubject);
-    }
+    return repository.findByProviderAndProviderSubject(provider, providerSubject);
+  }
 
-    @Override
-    public Optional<UserIdentity> findByUserIdAndProvider(
-            UUID userId,
-            IdentityProvider provider) {
+  @Override
+  public Optional<UserIdentity> findByUserIdAndProvider(UUID userId, IdentityProvider provider) {
 
-        return repository.findByUserIdAndProvider(
-                userId,
-                provider);
-    }
+    return repository.findByUserIdAndProvider(userId, provider);
+  }
 
-    @Override
-    public UserIdentity save(UserIdentity userIdentity) {
-        return repository.save(userIdentity);
-    }
+  @Override
+  public UserIdentity save(UserIdentity userIdentity) {
+    return repository.save(userIdentity);
+  }
 }

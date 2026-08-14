@@ -12,43 +12,37 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CreateSessionService {
 
-    private final SessionRepository sessionRepository;
-    private final RefreshTokenHasher refreshTokenHasher;
-    private final TokenService tokenService;
+  private final SessionRepository sessionRepository;
+  private final RefreshTokenHasher refreshTokenHasher;
+  private final TokenService tokenService;
 
-    public CreateSessionService(
-            SessionRepository sessionRepository,
-            RefreshTokenHasher refreshTokenHasher,
-            TokenService tokenService) {
+  public CreateSessionService(
+      SessionRepository sessionRepository,
+      RefreshTokenHasher refreshTokenHasher,
+      TokenService tokenService) {
 
-        this.sessionRepository = sessionRepository;
-        this.refreshTokenHasher = refreshTokenHasher;
-        this.tokenService = tokenService;
-    }
+    this.sessionRepository = sessionRepository;
+    this.refreshTokenHasher = refreshTokenHasher;
+    this.tokenService = tokenService;
+  }
 
-    @Transactional
-    public Session create(
-            User user,
-            String refreshToken) {
+  @Transactional
+  public Session create(User user, String refreshToken) {
 
-        String tokenHash =
-                refreshTokenHasher.hash(refreshToken);
+    String tokenHash = refreshTokenHasher.hash(refreshToken);
 
-        Session session = Session.create(
-                user,
-                tokenHash
-        );
+    Session session = Session.create(user, tokenHash);
 
-        return sessionRepository.save(session);
-    }
+    return sessionRepository.save(session);
+  }
 
-    @Transactional
-    public AuthenticationResult issueTokensAndCreateSession(User user) {
-        String accessToken = tokenService.generateAccessToken(user);
-        String refreshToken = tokenService.generateRefreshToken(user);
+  @Transactional
+  public AuthenticationResult issueTokensAndCreateSession(User user) {
+    String accessToken = tokenService.generateAccessToken(user);
+    String refreshToken = tokenService.generateRefreshToken(user);
 
-        create(user, refreshToken);
+    create(user, refreshToken);
 
-        return new AuthenticationResult(accessToken, refreshToken);
-    }
+    return new AuthenticationResult(accessToken, refreshToken);
+  }
 }

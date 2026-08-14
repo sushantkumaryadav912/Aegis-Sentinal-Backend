@@ -5,9 +5,9 @@ import java.util.UUID;
 
 public interface TokenService {
 
-    String generateAccessToken(User user);
+  String generateAccessToken(User user);
 
-    String generateRefreshToken(User user);
+  String generateRefreshToken(User user);
 
-    UUID extractUserIdFromRefreshToken(String refreshToken);
+  UUID extractUserIdFromRefreshToken(String refreshToken);
 }

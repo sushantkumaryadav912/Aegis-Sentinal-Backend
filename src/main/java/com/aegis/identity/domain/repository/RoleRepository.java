@@ -7,11 +7,11 @@ import java.util.UUID;
 
 public interface RoleRepository {
 
-    Optional<Role> findById(UUID id);
+  Optional<Role> findById(UUID id);
 
-    Optional<Role> findByName(String name);
+  Optional<Role> findByName(String name);
 
-    List<Role> findAll();
+  List<Role> findAll();
 
-    Role save(Role role);
+  Role save(Role role);
 }

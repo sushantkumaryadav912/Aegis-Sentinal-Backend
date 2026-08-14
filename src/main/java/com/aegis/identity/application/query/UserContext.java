@@ -7,10 +7,8 @@ import java.util.List;
 import java.util.Set;
 
 public record UserContext(
-        User user,
-        Organization organization,
-        Workspace workspace,
-        List<String> roles,
-        Set<String> permissions
-) {
-}
+    User user,
+    Organization organization,
+    Workspace workspace,
+    List<String> roles,
+    Set<String> permissions) {}

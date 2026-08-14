@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRoleJpaRepository extends JpaRepository<UserRole, UUID> {
 
-    List<UserRole> findByUserId(UUID userId);
+  List<UserRole> findByUserId(UUID userId);
 
-    List<UserRole> findByUserIdAndOrganizationId(UUID userId, UUID organizationId);
+  List<UserRole> findByUserIdAndOrganizationId(UUID userId, UUID organizationId);
 }

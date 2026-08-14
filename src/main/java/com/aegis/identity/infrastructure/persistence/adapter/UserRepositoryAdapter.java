@@ -10,29 +10,29 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class UserRepositoryAdapter implements UserRepository {
 
-    private final UserJpaRepository repository;
+  private final UserJpaRepository repository;
 
-    public UserRepositoryAdapter(UserJpaRepository repository) {
-        this.repository = repository;
-    }
+  public UserRepositoryAdapter(UserJpaRepository repository) {
+    this.repository = repository;
+  }
 
-    @Override
-    public Optional<User> findById(UUID id) {
-        return repository.findById(id);
-    }
+  @Override
+  public Optional<User> findById(UUID id) {
+    return repository.findById(id);
+  }
 
-    @Override
-    public Optional<User> findByEmail(String email) {
-        return repository.findByEmail(email);
-    }
+  @Override
+  public Optional<User> findByEmail(String email) {
+    return repository.findByEmail(email);
+  }
 
-    @Override
-    public boolean existsByEmail(String email) {
-        return repository.existsByEmail(email);
-    }
+  @Override
+  public boolean existsByEmail(String email) {
+    return repository.existsByEmail(email);
+  }
 
-    @Override
-    public User save(User user) {
-        return repository.save(user);
-    }
+  @Override
+  public User save(User user) {
+    return repository.save(user);
+  }
 }

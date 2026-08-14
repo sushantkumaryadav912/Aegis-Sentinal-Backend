@@ -28,33 +28,29 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Builder
 public class Workspace {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "organization_id", nullable = false)
-    private Organization organization;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "organization_id", nullable = false)
+  private Organization organization;
 
-    @Column(nullable = false)
-    private String name;
+  @Column(nullable = false)
+  private String name;
 
-    @Column(nullable = false, length = 100)
-    private String slug;
+  @Column(nullable = false, length = 100)
+  private String slug;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+  @CreationTimestamp
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private Instant createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
+  @UpdateTimestamp
+  @Column(name = "updated_at", nullable = false)
+  private Instant updatedAt;
 
-    public static Workspace create(Organization organization, String name, String slug) {
-        return Workspace.builder()
-                .organization(organization)
-                .name(name)
-                .slug(slug)
-                .build();
-    }
+  public static Workspace create(Organization organization, String name, String slug) {
+    return Workspace.builder().organization(organization).name(name).slug(slug).build();
+  }
 }
