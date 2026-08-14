@@ -29,6 +29,11 @@ public class DatabaseGrantedAuthoritiesConverter implements Converter<Jwt, Colle
     @Transactional(readOnly = true)
     public Collection<GrantedAuthority> convert(Jwt jwt) {
 
+        String tokenType = jwt.getClaimAsString("token_type");
+        if (!"access".equals(tokenType)) {
+            return Set.of();
+        }
+
         UUID userId;
 
         try {

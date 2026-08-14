@@ -1,6 +1,8 @@
 package com.aegis.identity.application.service;
 
 import com.aegis.identity.application.port.RefreshTokenHasher;
+import com.aegis.identity.application.port.TokenService;
+import com.aegis.identity.application.query.AuthenticationResult;
 import com.aegis.identity.domain.entity.Session;
 import com.aegis.identity.domain.entity.User;
 import com.aegis.identity.domain.repository.SessionRepository;
@@ -12,13 +14,16 @@ public class CreateSessionService {
 
     private final SessionRepository sessionRepository;
     private final RefreshTokenHasher refreshTokenHasher;
+    private final TokenService tokenService;
 
     public CreateSessionService(
             SessionRepository sessionRepository,
-            RefreshTokenHasher refreshTokenHasher) {
+            RefreshTokenHasher refreshTokenHasher,
+            TokenService tokenService) {
 
         this.sessionRepository = sessionRepository;
         this.refreshTokenHasher = refreshTokenHasher;
+        this.tokenService = tokenService;
     }
 
     @Transactional
@@ -35,5 +40,15 @@ public class CreateSessionService {
         );
 
         return sessionRepository.save(session);
+    }
+
+    @Transactional
+    public AuthenticationResult issueTokensAndCreateSession(User user) {
+        String accessToken = tokenService.generateAccessToken(user);
+        String refreshToken = tokenService.generateRefreshToken(user);
+
+        create(user, refreshToken);
+
+        return new AuthenticationResult(accessToken, refreshToken);
     }
 }

@@ -1,6 +1,7 @@
 package com.aegis.identity.api.controller;
 
 import com.aegis.identity.api.dto.AuthenticationResponse;
+import com.aegis.identity.api.dto.LinkAccountRequest;
 import com.aegis.identity.api.dto.LoginRequest;
 import com.aegis.identity.api.dto.LogoutRequest;
 import com.aegis.identity.api.dto.OrganizationResponse;
@@ -8,6 +9,7 @@ import com.aegis.identity.api.dto.RefreshTokenRequest;
 import com.aegis.identity.api.dto.RegisterRequest;
 import com.aegis.identity.api.dto.UserResponse;
 import com.aegis.identity.api.dto.WorkspaceResponse;
+import com.aegis.identity.application.command.LinkAccountCommand;
 import com.aegis.identity.application.command.LoginUserCommand;
 import com.aegis.identity.application.command.LogoutCommand;
 import com.aegis.identity.application.command.RefreshTokenCommand;
@@ -17,6 +19,7 @@ import com.aegis.identity.application.query.UserContext;
 import com.aegis.identity.application.service.AuthenticateUserService;
 import com.aegis.identity.application.service.GetCurrentUserService;
 import com.aegis.identity.application.service.LogoutService;
+import com.aegis.identity.application.service.OAuthAccountLinkService;
 import com.aegis.identity.application.service.RefreshTokenService;
 import com.aegis.identity.application.service.RegisterOrganizationService;
 import jakarta.validation.Valid;
@@ -40,19 +43,22 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final LogoutService logoutService;
     private final GetCurrentUserService getCurrentUserService;
+    private final OAuthAccountLinkService oAuthAccountLinkService;
 
     public AuthController(
             RegisterOrganizationService registerOrganizationService,
             AuthenticateUserService authenticateUserService,
             RefreshTokenService refreshTokenService,
             LogoutService logoutService,
-            GetCurrentUserService getCurrentUserService) {
+            GetCurrentUserService getCurrentUserService,
+            OAuthAccountLinkService oAuthAccountLinkService) {
 
         this.registerOrganizationService = registerOrganizationService;
         this.authenticateUserService = authenticateUserService;
         this.refreshTokenService = refreshTokenService;
         this.logoutService = logoutService;
         this.getCurrentUserService = getCurrentUserService;
+        this.oAuthAccountLinkService = oAuthAccountLinkService;
     }
 
     @PostMapping("/register")
@@ -130,9 +136,29 @@ public class AuthController {
         );
     }
 
+    @PostMapping("/link-account")
+    public AuthenticationResponse linkAccount(
+            @Valid @RequestBody LinkAccountRequest request) {
+
+        AuthenticationResult result =
+                oAuthAccountLinkService.execute(
+                        new LinkAccountCommand(
+                                request.email(),
+                                request.password(),
+                                request.providerSubject()
+                        )
+                );
+
+        return new AuthenticationResponse(
+                result.accessToken(),
+                result.refreshToken(),
+                "Bearer"
+        );
+    }
+
     @GetMapping("/me")
     public UserResponse me(@AuthenticationPrincipal Jwt jwt) {
-        if (jwt == null || jwt.getSubject() == null) {
+        if (jwt == null || jwt.getSubject() == null || !"access".equals(jwt.getClaimAsString("token_type"))) {
             throw new IllegalArgumentException("Unauthenticated request");
         }
 

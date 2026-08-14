@@ -2,7 +2,6 @@ package com.aegis.identity.application.service;
 
 import com.aegis.identity.application.query.UserContext;
 import com.aegis.identity.domain.entity.Organization;
-import com.aegis.identity.domain.entity.Permission;
 import com.aegis.identity.domain.entity.User;
 import com.aegis.identity.domain.entity.UserRole;
 import com.aegis.identity.domain.entity.Workspace;
@@ -53,10 +52,10 @@ public class GetCurrentUserService {
                 .toList();
 
         Set<String> permissions = userRoles.stream()
-                .map(UserRole::getRole)
+                .map(ur -> ur.getRole())
                 .filter(Objects::nonNull)
                 .flatMap(role -> role.getPermissions().stream())
-                .map(Permission::getName)
+                .map(perm -> perm.getName())
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
@@ -67,7 +66,7 @@ public class GetCurrentUserService {
         }
 
         Workspace workspace = userRoles.stream()
-                .map(UserRole::getWorkspace)
+                .map(ur -> ur.getWorkspace())
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElseGet(() -> {

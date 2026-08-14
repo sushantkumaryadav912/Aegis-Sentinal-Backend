@@ -40,8 +40,8 @@ public class TenantResolverFilter extends OncePerRequestFilter {
                 String subject = jwt.getSubject();
                 if (subject != null) {
                     UUID userId = UUID.fromString(subject);
-                    UUID organizationId = parseUuidHeader(request, HEADER_ORGANIZATION_ID);
-                    UUID workspaceId = parseUuidHeader(request, HEADER_WORKSPACE_ID);
+                    UUID organizationId = parseUuidHeader(request, HEADER_ORGANIZATION_ID, "X-Organization-Id");
+                    UUID workspaceId = parseUuidHeader(request, HEADER_WORKSPACE_ID, "X-Workspace-Id");
 
                     if (organizationId == null || workspaceId == null) {
                         List<UserRole> userRoles = userRoleRepository.findByUserId(userId);
@@ -66,13 +66,15 @@ public class TenantResolverFilter extends OncePerRequestFilter {
         }
     }
 
-    private UUID parseUuidHeader(HttpServletRequest request, String headerName) {
-        String headerValue = request.getHeader(headerName);
-        if (headerValue != null && !headerValue.isBlank()) {
-            try {
-                return UUID.fromString(headerValue.trim());
-            } catch (IllegalArgumentException e) {
-                // Ignore invalid UUID header format
+    private UUID parseUuidHeader(HttpServletRequest request, String... headerNames) {
+        for (String headerName : headerNames) {
+            String headerValue = request.getHeader(headerName);
+            if (headerValue != null && !headerValue.isBlank()) {
+                try {
+                    return UUID.fromString(headerValue.trim());
+                } catch (IllegalArgumentException e) {
+                    // Ignore invalid UUID header format
+                }
             }
         }
         return null;

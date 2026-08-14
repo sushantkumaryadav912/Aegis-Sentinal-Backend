@@ -1,7 +1,5 @@
 package com.aegis.identity.infrastructure.security.authorization;
 
-import com.aegis.identity.domain.entity.Permission;
-import com.aegis.identity.domain.entity.Role;
 import com.aegis.identity.domain.entity.UserRole;
 import com.aegis.identity.domain.repository.UserRoleRepository;
 import java.util.List;
@@ -34,10 +32,10 @@ public class TenantSecurityExpressionService {
         }
 
         return userRoles.stream()
-                .map(UserRole::getRole)
+                .map(ur -> ur.getRole())
                 .filter(role -> role != null && role.getPermissions() != null)
                 .flatMap(role -> role.getPermissions().stream())
-                .map(Permission::getName)
+                .map(perm -> perm.getName())
                 .anyMatch(permName -> permName.equals(requiredPermission));
     }
 
@@ -55,10 +53,10 @@ public class TenantSecurityExpressionService {
 
         return userRoles.stream()
                 .filter(ur -> ur.getWorkspace() == null || ur.getWorkspace().getId().equals(workspaceId))
-                .map(UserRole::getRole)
+                .map(ur -> ur.getRole())
                 .filter(role -> role != null && role.getPermissions() != null)
                 .flatMap(role -> role.getPermissions().stream())
-                .map(Permission::getName)
+                .map(perm -> perm.getName())
                 .anyMatch(permName -> permName.equals(requiredPermission));
     }
 
@@ -71,9 +69,9 @@ public class TenantSecurityExpressionService {
 
         List<UserRole> userRoles = userRoleRepository.findByUserIdAndOrganizationId(userId, organizationId);
         return userRoles.stream()
-                .map(UserRole::getRole)
+                .map(ur -> ur.getRole())
                 .filter(role -> role != null)
-                .map(Role::getName)
+                .map(role -> role.getName())
                 .anyMatch(roleName -> roleName.equals(requiredRoleName));
     }
 

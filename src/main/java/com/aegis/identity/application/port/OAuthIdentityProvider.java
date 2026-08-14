@@ -6,5 +6,7 @@ public interface OAuthIdentityProvider {
 
     IdentityProvider provider();
 
+    boolean supports(Object principal);
+
     OAuthUserInfo extractUserInfo(Object principal);
 }

@@ -2,10 +2,12 @@ package com.aegis.identity.application.service;
 
 import com.aegis.identity.application.command.LoginUserCommand;
 import com.aegis.identity.application.port.PasswordHasher;
-import com.aegis.identity.application.port.TokenService;
 import com.aegis.identity.application.query.AuthenticationResult;
 import com.aegis.identity.domain.entity.User;
 import com.aegis.identity.domain.repository.UserRepository;
+import com.aegis.identity.infrastructure.audit.AuditEventType;
+import com.aegis.identity.infrastructure.audit.SecurityAuditEvent;
+import com.aegis.identity.infrastructure.audit.SecurityAuditLogger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,18 +16,18 @@ public class AuthenticateUserService {
 
     private final UserRepository userRepository;
     private final PasswordHasher passwordHasher;
-    private final TokenService tokenService;
     private final CreateSessionService createSessionService;
+    private final SecurityAuditLogger auditLogger;
 
     public AuthenticateUserService(
             UserRepository userRepository,
             PasswordHasher passwordHasher,
-            TokenService tokenService,
-            CreateSessionService createSessionService) {
+            CreateSessionService createSessionService,
+            SecurityAuditLogger auditLogger) {
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
-        this.tokenService = tokenService;
         this.createSessionService = createSessionService;
+        this.auditLogger = auditLogger;
     }
 
     @Transactional
@@ -45,14 +47,8 @@ public class AuthenticateUserService {
             throw new IllegalArgumentException("Invalid email or password");
         }
 
-        String accessToken = tokenService.generateAccessToken(user);
-        String refreshToken = tokenService.generateRefreshToken(user);
-
-        createSessionService.create(user, refreshToken);
-
-        return new AuthenticationResult(
-                accessToken,
-                refreshToken
-        );
+        AuthenticationResult result = createSessionService.issueTokensAndCreateSession(user);
+        auditLogger.logEvent(SecurityAuditEvent.of(AuditEventType.AUTH_LOGIN_SUCCESS, user.getId(), "SUCCESS", "Local password login successful"));
+        return result;
     }
 }

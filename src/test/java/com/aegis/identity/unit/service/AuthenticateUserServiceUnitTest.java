@@ -1,0 +1,101 @@
+package com.aegis.identity.unit.service;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.aegis.identity.application.command.LoginUserCommand;
+import com.aegis.identity.application.port.PasswordHasher;
+import com.aegis.identity.application.query.AuthenticationResult;
+import com.aegis.identity.application.service.AuthenticateUserService;
+import com.aegis.identity.application.service.CreateSessionService;
+import com.aegis.identity.domain.entity.Organization;
+import com.aegis.identity.domain.entity.User;
+import com.aegis.identity.domain.repository.UserRepository;
+import com.aegis.identity.infrastructure.audit.SecurityAuditLogger;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+class AuthenticateUserServiceUnitTest {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private PasswordHasher passwordHasher;
+
+    @Mock
+    private CreateSessionService createSessionService;
+
+    @Mock
+    private SecurityAuditLogger auditLogger;
+
+    private AuthenticateUserService service;
+    private User testUser;
+
+    @BeforeEach
+    void setUp() {
+        service = new AuthenticateUserService(userRepository, passwordHasher, createSessionService, auditLogger);
+        Organization org = Organization.create("Test Org", "test-org");
+        testUser = User.create(org, "user@aegis.test", "hashed_pwd", "Test", "User");
+    }
+
+    @Test
+    @DisplayName("Service Unit Test: Successful password authentication issues tokens and logs audit event")
+    void testExecute_success() {
+        LoginUserCommand cmd = new LoginUserCommand("user@aegis.test", "Password123!");
+        when(userRepository.findByEmail("user@aegis.test")).thenReturn(Optional.of(testUser));
+        when(passwordHasher.matches("Password123!", "hashed_pwd")).thenReturn(true);
+        when(createSessionService.issueTokensAndCreateSession(testUser))
+                .thenReturn(new AuthenticationResult("access_token", "refresh_token"));
+
+        AuthenticationResult result = service.execute(cmd);
+
+        assertThat(result.accessToken()).isEqualTo("access_token");
+        assertThat(result.refreshToken()).isEqualTo("refresh_token");
+        verify(auditLogger).logEvent(any());
+    }
+
+    @Test
+    @DisplayName("Service Unit Test: Unknown email throws IllegalArgumentException")
+    void testExecute_unknownEmail_throws() {
+        LoginUserCommand cmd = new LoginUserCommand("unknown@aegis.test", "Password123!");
+        when(userRepository.findByEmail("unknown@aegis.test")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.execute(cmd))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid email or password");
+    }
+
+    @Test
+    @DisplayName("Service Unit Test: Inactive user throws IllegalStateException")
+    void testExecute_inactiveUser_throws() {
+        testUser.setIsActive(false);
+        LoginUserCommand cmd = new LoginUserCommand("user@aegis.test", "Password123!");
+        when(userRepository.findByEmail("user@aegis.test")).thenReturn(Optional.of(testUser));
+
+        assertThatThrownBy(() -> service.execute(cmd))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("inactive");
+    }
+
+    @Test
+    @DisplayName("Service Unit Test: Wrong password throws IllegalArgumentException")
+    void testExecute_wrongPassword_throws() {
+        LoginUserCommand cmd = new LoginUserCommand("user@aegis.test", "WrongPassword!");
+        when(userRepository.findByEmail("user@aegis.test")).thenReturn(Optional.of(testUser));
+        when(passwordHasher.matches("WrongPassword!", "hashed_pwd")).thenReturn(false);
+
+        assertThatThrownBy(() -> service.execute(cmd))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid email or password");
+    }
+}
