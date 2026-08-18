@@ -1,0 +1,50 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/aegis
+    username: aegis
+    password: aegis_dev
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+    open-in-view: false
+
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:google-client-id-placeholder.apps.googleusercontent.com}
+            client-secret: ${GOOGLE_CLIENT_SECRET:google-client-secret-placeholder}
+            scope:
+              - openid
+              - profile
+              - email
+
+logging:
+  level:
+    root: INFO
+    com.aegis: DEBUG
+    org.springframework.security: INFO
+
+aegis:
+  security:
+    jwt:
+      issuer: aegis-sentinel
+      secret: ${AEGIS_JWT_SECRET:dGhpcy1pcy1hLXZlcnktc2VjdXJlLWRldmVsb3BtZW50LWp3dC1zZWNyZXQta2V5LTMyLWJ5dGVzLW1pbg==}
+      access-token-ttl: 15m
+      refresh-token-ttl: 7d
+

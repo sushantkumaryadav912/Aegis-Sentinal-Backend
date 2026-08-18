@@ -1,0 +1,79 @@
+### Aegis Sentinel API — Local HTTP Client Requests
+
+@baseUrl = http://localhost:8080
+@orgId = a1b2c3d4-e5f6-7890-abcd-ef1234567890
+@workspaceId = f8e7d6c5-b4a3-9281-7065-43210fedcba9
+
+### 1. Register Organization & Admin User
+# @name register
+POST {{baseUrl}}/api/aegis/v1/auth/register
+Content-Type: application/json
+
+{
+  "organizationName": "Acme Cyber Security Corp",
+  "organizationSlug": "acme-cyber",
+  "workspaceName": "Production Operations",
+  "workspaceSlug": "prod-ops",
+  "email": "admin@acme-cyber.cloud",
+  "password": "P@ssw0rd2026!",
+  "firstName": "Jane",
+  "lastName": "Doe"
+}
+
+###
+
+@accessToken = {{register.response.body.accessToken}}
+@refreshToken = {{register.response.body.refreshToken}}
+
+### 2. Login User
+# @name login
+POST {{baseUrl}}/api/aegis/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@acme-cyber.cloud",
+  "password": "P@ssw0rd2026!"
+}
+
+### 3. Get Current Authenticated User Context
+GET {{baseUrl}}/api/aegis/v1/auth/me
+Authorization: Bearer {{accessToken}}
+
+### 4. Refresh Access Token
+POST {{baseUrl}}/api/aegis/v1/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### 5. Link OAuth Account
+POST {{baseUrl}}/api/aegis/v1/auth/link-account
+Content-Type: application/json
+
+{
+  "email": "admin@acme-cyber.cloud",
+  "password": "P@ssw0rd2026!",
+  "providerSubject": "google-sub-123456789"
+}
+
+### 6. Check RBAC Permission (alert:read)
+GET {{baseUrl}}/api/aegis/v1/rbac-test/alert-read
+Authorization: Bearer {{accessToken}}
+
+### 7. Check RBAC Role (ORG_ADMIN)
+GET {{baseUrl}}/api/aegis/v1/rbac-test/org-admin
+Authorization: Bearer {{accessToken}}
+
+### 8. Check Tenant Scoped Permission (Org)
+GET {{baseUrl}}/api/aegis/v1/rbac-test/orgs/{{orgId}}/alerts
+Authorization: Bearer {{accessToken}}
+X-Organization-Id: {{orgId}}
+
+### 9. Logout
+POST {{baseUrl}}/api/aegis/v1/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}

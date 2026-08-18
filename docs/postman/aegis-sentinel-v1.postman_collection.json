@@ -1,0 +1,456 @@
+{
+	"info": {
+		"_postman_id": "aegis-sentinel-v1-collection-id",
+		"name": "Aegis Sentinel API - v1",
+		"description": "Postman API Collection for Aegis Sentinel Enterprise Cloud Security Platform.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "orgId",
+			"value": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+			"type": "string"
+		},
+		{
+			"key": "workspaceId",
+			"value": "f8e7d6c5-b4a3-9281-7065-43210fedcba9",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register Organization",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+									"    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"organizationName\": \"Acme Cyber Security Corp\",\n  \"organizationSlug\": \"acme-cyber\",\n  \"workspaceName\": \"Production Operations\",\n  \"workspaceSlug\": \"prod-ops\",\n  \"email\": \"admin@acme-cyber.cloud\",\n  \"password\": \"P@ssw0rd2026!\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/aegis/v1/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"aegis",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+									"    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@acme-cyber.cloud\",\n  \"password\": \"P@ssw0rd2026!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/aegis/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"aegis",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+									"    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/aegis/v1/auth/refresh",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"aegis",
+								"v1",
+								"auth",
+								"refresh"
+							]
+						}
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/aegis/v1/auth/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"aegis",
+								"v1",
+								"auth",
+								"logout"
+							]
+						}
+					}
+				},
+				{
+					"name": "Link Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@acme-cyber.cloud\",\n  \"password\": \"P@ssw0rd2026!\",\n  \"providerSubject\": \"google-sub-123456789\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/aegis/v1/auth/link-account",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"aegis",
+								"v1",
+								"auth",
+								"link-account"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User Profile Context",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.organization && jsonData.organization.id) {",
+									"        pm.collectionVariables.set('orgId', jsonData.organization.id);",
+									"    }",
+									"    if (jsonData.workspace && jsonData.workspace.id) {",
+									"        pm.collectionVariables.set('workspaceId', jsonData.workspace.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/aegis/v1/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"aegis",
+								"v1",
+								"auth",
+								"me"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "RBAC & Multi-Tenancy",
+			"item": [
+				{
+					"name": "Check Alert Read Authority",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/aegis/v1/rbac-test/alert-read",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"aegis",
+								"v1",
+								"rbac-test",
+								"alert-read"
+							]
+						}
+					}
+				},
+				{
+					"name": "Check Workflow Execute Authority",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/aegis/v1/rbac-test/workflow-execute",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"aegis",
+								"v1",
+								"rbac-test",
+								"workflow-execute"
+							]
+						}
+					}
+				},
+				{
+					"name": "Check Org Admin Role",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/aegis/v1/rbac-test/org-admin",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"aegis",
+								"v1",
+								"rbac-test",
+								"org-admin"
+							]
+						}
+					}
+				},
+				{
+					"name": "Tenant Organization Scoped Alerts",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Organization-Id",
+								"value": "{{orgId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/aegis/v1/rbac-test/orgs/{{orgId}}/alerts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"aegis",
+								"v1",
+								"rbac-test",
+								"orgs",
+								"{{orgId}}",
+								"alerts"
+							]
+						}
+					}
+				},
+				{
+					"name": "Tenant Workspace Scoped Alerts",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Organization-Id",
+								"value": "{{orgId}}"
+							},
+							{
+								"key": "X-Workspace-Id",
+								"value": "{{workspaceId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/aegis/v1/rbac-test/orgs/{{orgId}}/workspaces/{{workspaceId}}/alerts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"aegis",
+								"v1",
+								"rbac-test",
+								"orgs",
+								"{{orgId}}",
+								"workspaces",
+								"{{workspaceId}}",
+								"alerts"
+							]
+						}
+					}
+				}
+			]
+		}
+	]
+}
